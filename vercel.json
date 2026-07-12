@@ -2,11 +2,11 @@
   "services": {
     "frontend": {
       "root": "frontend/",
-      "entrypoint": "Dockerfile.vercel"
+      "entrypoint": "Dockerfile"
     },
     "backend": {
       "root": "backend/",
-      "entrypoint": "Dockerfile.vercel"
+      "entrypoint": "Dockerfile"
     }
   },
   "rewrites": [
