@@ -61,10 +61,11 @@ export async function apiRequest<T>(
 	path: string,
 	options: RequestOptions = {},
 ): Promise<T> {
-	return executeRequest<T>(path, options, true)
+	return executeRequest<T>(path, options, true, 8)
 }
 
-async function executeRequest<T>(path: string, options: RequestOptions, canRefresh: boolean): Promise<T> {
+async function executeRequest<T>(path: string, options: RequestOptions, canRefresh: boolean, retries: number): Promise<T> {
+	const method = (options.method ?? "GET").toUpperCase()
 	const headers = new Headers(options.headers)
 	headers.set("Accept", "application/json")
 	if (options.body !== undefined)
@@ -80,9 +81,13 @@ async function executeRequest<T>(path: string, options: RequestOptions, canRefre
 	})
 	if (response.status === 204) return undefined as T
 	const payload = await response.json().catch(() => null)
+	if ([502, 503, 504].includes(response.status) && method === "GET" && retries > 0) {
+		await new Promise((resolve) => setTimeout(resolve, 1200))
+		return executeRequest<T>(path, options, canRefresh, retries - 1)
+	}
 	if (response.status === 401 && options.authenticated && canRefresh) {
 		await ensureFreshSession()
-		return executeRequest<T>(path, options, false)
+		return executeRequest<T>(path, options, false, retries)
 	}
 	if (!response.ok)
 		throw new ApiError(

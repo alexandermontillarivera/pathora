@@ -2,11 +2,13 @@ package io.pathora.catalog.config;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@ConditionalOnProperty(name = "app.catalog.initialize", havingValue = "true", matchIfMissing = true)
 public class CatalogDataInitializer implements ApplicationRunner {
   private final JdbcTemplate jdbc;
 

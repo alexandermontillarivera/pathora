@@ -8,6 +8,13 @@ RUN ./mvnw package -DskipTests -B
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+RUN apk add --no-cache socat
 COPY --from=build /app/target/*.jar app.jar
+COPY wait-for-spring.sh /usr/local/bin/wait-for-spring
+RUN chmod +x /usr/local/bin/wait-for-spring
+ENV CATALOG_INITIALIZE=false
+ENV SPRING_JPA_HIBERNATE_DDL_AUTO=none
+ENV SPRING_MAIN_LAZY_INITIALIZATION=true
+ENV JAVA_TOOL_OPTIONS="-XX:TieredStopAtLevel=1 -XX:+UseSerialGC"
 EXPOSE 80
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "/opt/java/openjdk/bin/java -jar app.jar --server.port=8080 --server.servlet.context-path=/api & exec /usr/bin/socat TCP-LISTEN:${PORT:-80},fork,reuseaddr EXEC:/usr/local/bin/wait-for-spring"]
