@@ -12,5 +12,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENV JPA_DDL_AUTO=none
 ENV SERVER_PORT=8080
-ENV JAVA_OPTS="-Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-ENTRYPOINT java $JAVA_OPTS -jar app.jar
+ENTRYPOINT ["java", "-Xmx512m", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
