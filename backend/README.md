@@ -1,31 +1,31 @@
 # Careers API
 
-API REST modular para consultar y administrar careers universitarias.
+Modular REST API for querying and managing university careers.
 
-## Tecnologías
+## Tech Stack
 
-- Java 25 LTS, Spring Boot 4.1 y Maven Wrapper
-- Spring Web MVC, Spring Data JPA/Hibernate y Bean Validation
-- PostgreSQL 17 y migraciones Flyway
+- Java 21 LTS, Spring Boot 4.1, and Maven Wrapper
+- Spring Web MVC, Spring Data JPA/Hibernate, and Bean Validation
+- PostgreSQL 17
 - OpenAPI 3 / Swagger UI
-- Actuator para health checks
+- Actuator for health checks
 
-## Inicio rápido
+## Quick Start
 
-Requisitos: JDK 25.
+Prerequisites: JDK 21.
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-La migración crea las tablas y algunos datos de ejemplo automáticamente.
+The `CatalogDataInitializer` seeds schools, careers, curricula, and sample data automatically on startup.
 
-- API: `http://localhost:8080/api/v1/careers`
-- Swagger UI: `http://localhost:8080/api/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/api/v3/api-docs`
-- Salud: `http://localhost:8080/api/actuator/health`
+- API: `http://localhost:4000/api/v1/careers`
+- Swagger UI: `http://localhost:4000/api/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:4000/api/v3/api-docs`
+- Health: `http://localhost:4000/api/actuator/health`
 
-## Consultas principales
+## Core Endpoints
 
 ```http
 GET /api/v1/schools
@@ -37,36 +37,45 @@ GET /api/v1/careers/1
 GET /api/v1/careers?page=2&max=10&order=DESC
 ```
 
-Los endpoints de listado aceptan `page` (desde 1), `max` (1 a 100) y `order` (`ASC` o `DESC`). Todos son opcionales; sus valores predeterminados son `page=1`, `max=20` y `order=ASC`.
+List endpoints accept `page` (1-based), `max` (1 to 100), and `order` (`ASC` or `DESC`). All are optional; defaults are `page=1`, `max=20`, and `order=ASC`.
 
-El botón “Actualizar” del cliente solo necesita repetir el `GET`: cada consulta se sirve directamente desde PostgreSQL.
+## Configuration
 
-## Configuración
+Available variables are documented in `.env.example`. The application automatically loads an `.env` file located at the repository root or inside the `backend` directory.
 
-Las variables disponibles están documentadas en `.env.example`. La aplicación carga automáticamente un archivo `.env` ubicado en la raíz del repositorio o dentro de `backend`.
-
-## Formato de código
+## Code Formatting
 
 ```powershell
-# Formatea todos los archivos compatibles
+# Format all compatible files
 .\mvnw.cmd spotless:apply
 
-# Comprueba el formato sin modificar archivos
+# Check formatting without modifying files
 .\mvnw.cmd spotless:check
 ```
 
-## Estructura
+## Structure
 
 ```text
 src/main/java/io/pathora/catalog
-├── config/                  # configuración transversal
-├── entities/                # entidades JPA globales
-├── enums/                   # enumeraciones globales
-├── repositories/            # acceso global a persistencia
+├── config/                  # cross-cutting configuration
+├── entities/                # JPA entities
+├── enums/                   # global enumerations
+├── repositories/            # persistence access layer
 ├── modules/
-│   ├── career/              # controller, service y DTO
-│   └── school/              # controller, service y DTO
+│   ├── auth/                # registration, login, JWT, password reset
+│   ├── career/              # controller, service, and DTO
+│   ├── school/              # controller, service, and DTO
+│   ├── pensum/              # curriculum by career
+│   ├── rating/              # career ratings (1–5)
+│   ├── comment/             # rich-text comments and voting
+│   ├── saved/               # bookmarked careers
+│   ├── notification/        # user notifications
+│   ├── community/           # global activity stats
+│   └── user/                # public profile and settings
 └── shared/
-    ├── api/                 # contrato común de respuestas
-    └── exception/           # manejo global de errores
+    ├── api/                 # standard response envelope
+    ├── email/               # Resend email integration
+    ├── exception/           # global error handling
+    ├── pagination/          # paginated request/response
+    └── security/            # JWT service
 ```

@@ -1,31 +1,33 @@
 # Pathora Frontend
 
-Aplicación construida con Svelte 5, TypeScript y Vite, integrada con la API de Pathora mediante `fetch` nativo.
+SPA built with Svelte 5, TypeScript, and Vite, integrated with the Pathora API via native `fetch`.
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Copia `.env.example` como `.env` si necesitas cambiar la URL del backend.
+Copy `.env.example` to `.env` if you need to change the backend URL.
 
-## Estructura
+## Structure
 
-- `src/lib/components`: componentes compartidos por capa (`auth`, `brand`, `cards`, `form`, `layout`, `ui`).
-- `src/lib/data`: datos mock que reflejan los contratos del backend.
-- `src/lib/api`: cliente HTTP, errores y contratos transportables.
-- `src/lib/services`: integración por dominio con el backend.
-- `src/lib/hooks`: estado reactivo reutilizable, recursos y paginación infinita.
-- `src/lib/types.ts`: tipos globales del dominio.
-- `src/modules`: páginas y flujos organizados por funcionalidad.
+- `src/lib/components`: shared components by layer (`auth`, `brand`, `cards`, `form`, `layout`, `ui`).
+- `src/lib/api`: HTTP client, error handling, and transport contracts.
+- `src/lib/services`: domain-level backend integrations.
+- `src/lib/hooks`: reusable reactive state, resources, and infinite pagination.
+- `src/lib/stores`: global stores for auth and UI state.
+- `src/lib/types.ts`: global domain types.
+- `src/modules`: pages and flows organized by feature.
 
-La navegación usa `@dvcol/svelte-simple-router` en modo History API, con URLs limpias y una página 404. Los imports internos usan alias como `@components`, `@modules`, `@lib`, `@data` y `@stores`.
+Navigation uses `@dvcol/svelte-simple-router` in History API mode, with clean URLs and a 404 page. Internal imports use aliases such as `@components`, `@modules`, `@lib`, `@data`, and `@stores`.
 
-En producción, el servidor debe aplicar un fallback de las rutas del frontend hacia `index.html` para que una recarga directa de `/careers/1` funcione correctamente.
+In production, the server must apply a frontend route fallback to `index.html` so that a direct reload of `/careers/1` works correctly. The included `nginx.vercel.conf` handles this for both Docker and Vercel deployments.
 
-## Verificación
+## Scripts
 
-```powershell
-npm run check
-npm run build
-```
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build locally |
+| `npm run check` | Run svelte-check and TypeScript type-checking |
