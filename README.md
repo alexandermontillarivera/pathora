@@ -6,7 +6,7 @@ Full-stack academic career catalog that helps students explore university progra
 
 ```
 ┌────────────────────┐        HTTPS        ┌────────────────────────┐
-│      Frontend      │ ──────────────────▶ │     Render backend     │
+│  Vercel frontend   │ ──────────────────▶ │     Render backend     │
 │   Svelte 5 + Vite  │                     │ Spring Boot 4.1 / Java │
 └────────────────────┘                     └───────────┬────────────┘
                                                       │ JDBC/TLS
@@ -15,7 +15,7 @@ Full-stack academic career catalog that helps students explore university progra
                                            └───────────────────────┘
 ```
 
-The frontend calls the public Render API. The backend exposes all application endpoints below `/api` and connects to managed PostgreSQL over TLS.
+The Svelte SPA is deployed to Vercel as an independent application and is available at `https://pathora.apec-engineer.com`. It calls the public Render API at `https://pathora-60cw.onrender.com/api/v1`. The backend exposes all application endpoints below `/api` and connects to managed PostgreSQL over TLS.
 
 ## Tech Stack
 
@@ -225,6 +225,27 @@ The `/api/v1/careers` endpoint additionally accepts `name`, `schoolId`, `studyMo
 The root `render.yaml` defines the backend as a Docker web service in Virginia. Create a Blueprint from the repository and provide the database, JWT, and Resend secrets requested by Render. The service uses `/api/actuator/health` as its health check and redirects its root URL to Swagger UI.
 
 The production environment can be imported from `backend/.env.render`. Keep this file private and never commit it.
+
+## Deploying the frontend to Vercel
+
+The `frontend` directory is deployed as an independent Vite application. In the Vercel project settings, use:
+
+| Setting | Value |
+|---|---|
+| Root Directory | `frontend` |
+| Framework Preset | `Vite` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+
+Configure the production environment variable:
+
+```text
+VITE_API_URL=https://pathora-60cw.onrender.com/api/v1
+```
+
+The production domain is `https://pathora.apec-engineer.com`. The backend must include this exact origin in `CORS_ALLOWED_ORIGINS`, which is already configured in `backend/.env.render` and `render.yaml`.
+
+Because the application uses History API routing, Vercel must serve `index.html` for frontend routes such as `/careers/1`, `/schools/1`, and `/profile`. Configure this fallback in the frontend project's platform settings if the Vite preset does not apply it automatically.
 
 ### Local testing with Docker
 
