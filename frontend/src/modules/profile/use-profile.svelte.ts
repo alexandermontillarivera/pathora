@@ -1,1 +1,91 @@
-import type{ApiComment,ApiRating,ApiUser}from'@lib/api/api-types';import type{Career}from'@lib/types';import{authService}from'@lib/services/auth-service';import{savedService}from'@lib/services/saved-service';import{commentService}from'@lib/services/comment-service';import{ratingService}from'@lib/services/rating-service';import{mapCareer}from'@lib/services/catalog-mappers';import{openAuthModal}from'@stores/ui';import{onMount}from'svelte';export type ProfileTab='saved'|'comments'|'ratings'|'settings';export function useProfile(){let tab=$state<ProfileTab>('saved'),user=$state<ApiUser|null>(null),saved=$state<Career[]>([]),comments=$state<ApiComment[]>([]),ratings=$state<ApiRating[]>([]),loading=$state(true),error=$state('');function text(content:unknown){if(content&&typeof content==='object'&&'html'in content){const node=document.createElement('div');node.innerHTML=String((content as{html:string}).html);return node.textContent??''}return typeof content==='string'?content:'Comentario enriquecido'}async function load(){loading=true;try{const me=await authService.me();user=me;const[s,c,r]=await Promise.all([savedService.list(),commentService.byUser(me.id),ratingService.byUser(me.id)]);saved=s.records.map(x=>mapCareer(x.career));comments=c.records;ratings=r.records}catch(cause){error=cause instanceof Error?cause.message:'No pudimos cargar tu perfil.';openAuthModal()}finally{loading=false}}async function removeRating(id:number){await ratingService.remove(id);ratings=ratings.filter(item=>item.id!==id)}function removeSaved(id:number){saved=saved.filter(item=>item.id!==id)}function removeComment(id:number){comments=comments.filter(item=>item.id!==id)}onMount(load);return{removeRating,removeSaved,removeComment,text,get tab(){return tab},set tab(v:ProfileTab){tab=v},get user(){return user},get saved(){return saved},get comments(){return comments},get ratings(){return ratings},get loading(){return loading},get error(){return error}}}
+import type { ApiComment, ApiRating, ApiUser } from "@lib/api/api-types"
+import type { Career } from "@lib/types"
+import { authService } from "@lib/services/auth-service"
+import { savedService } from "@lib/services/saved-service"
+import { commentService } from "@lib/services/comment-service"
+import { ratingService } from "@lib/services/rating-service"
+import { mapCareer } from "@lib/services/catalog-mappers"
+import { openAuthModal } from "@stores/ui"
+import { onMount } from "svelte"
+
+export type ProfileTab = "saved" | "comments" | "ratings" | "settings"
+
+export function useProfile() {
+	let tab = $state<ProfileTab>("saved"),
+		user = $state<ApiUser | null>(null),
+		saved = $state<Career[]>([]),
+		comments = $state<ApiComment[]>([]),
+		ratings = $state<ApiRating[]>([]),
+		loading = $state(true),
+		error = $state("")
+	function text(content: unknown) {
+		if (content && typeof content === "object" && "html" in content) {
+			const node = document.createElement("div")
+			node.innerHTML = String((content as { html: string }).html)
+			return node.textContent ?? ""
+		}
+		return typeof content === "string" ? content : "Comentario enriquecido"
+	}
+	async function load() {
+		loading = true
+		try {
+			const me = await authService.me()
+			user = me
+			const [s, c, r] = await Promise.all([
+				savedService.list(),
+				commentService.byUser(me.id),
+				ratingService.byUser(me.id),
+			])
+			saved = s.records.map((x) => mapCareer(x.career))
+			comments = c.records
+			ratings = r.records
+		} catch (cause) {
+			error =
+				cause instanceof Error ? cause.message : "No pudimos cargar tu perfil."
+			openAuthModal()
+		} finally {
+			loading = false
+		}
+	}
+	async function removeRating(id: number) {
+		await ratingService.remove(id)
+		ratings = ratings.filter((item) => item.id !== id)
+	}
+	function removeSaved(id: number) {
+		saved = saved.filter((item) => item.id !== id)
+	}
+	function removeComment(id: number) {
+		comments = comments.filter((item) => item.id !== id)
+	}
+	onMount(load)
+	return {
+		removeRating,
+		removeSaved,
+		removeComment,
+		text,
+		get tab() {
+			return tab
+		},
+		set tab(v: ProfileTab) {
+			tab = v
+		},
+		get user() {
+			return user
+		},
+		get saved() {
+			return saved
+		},
+		get comments() {
+			return comments
+		},
+		get ratings() {
+			return ratings
+		},
+		get loading() {
+			return loading
+		},
+		get error() {
+			return error
+		},
+	}
+}

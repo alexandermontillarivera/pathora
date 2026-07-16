@@ -3,6 +3,7 @@ import { mapCareer, mapSchool } from "@lib/services/catalog-mappers"
 import { catalogService } from "@lib/services/catalog-service"
 import type { School } from "@lib/types"
 import { onMount } from "svelte"
+import { replaceRoute } from "@lib/router"
 
 const wait = (milliseconds: number) =>
 	new Promise((resolve) => setTimeout(resolve, milliseconds))
@@ -97,14 +98,9 @@ export function useSearch() {
 
 	async function submit() {
 		pageLoading = true
-		filters.appliedQuery = filters.query
-		history.replaceState(
-			{},
-			"",
-			filters.query.trim()
-				? `/search?q=${encodeURIComponent(filters.query.trim())}`
-				: "/search",
-		)
+		const query = filters.query.trim()
+		filters.appliedQuery = query
+		await replaceRoute(query ? `/search?q=${encodeURIComponent(query)}` : "/search")
 		try {
 			await resource.reload()
 			if (hasLocalFilters) await loadCompleteCatalog()
@@ -123,6 +119,7 @@ export function useSearch() {
 			minimumRating: 0,
 		})
 		try {
+			await replaceRoute("/search")
 			await resource.reload()
 		} finally {
 			pageLoading = false
@@ -143,9 +140,17 @@ export function useSearch() {
 		toggleSchool,
 		toggleMode,
 		setMinimumRating,
-		get schools() { return schools },
-		get pageLoading() { return pageLoading },
-		get results() { return results },
-		get resultCount() { return resultCount },
+		get schools() {
+			return schools
+		},
+		get pageLoading() {
+			return pageLoading
+		},
+		get results() {
+			return results
+		},
+		get resultCount() {
+			return resultCount
+		},
 	}
 }

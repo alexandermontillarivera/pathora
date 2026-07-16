@@ -1,4 +1,45 @@
-import {createInfiniteResource} from '@lib/hooks/create-infinite-resource.svelte'
-import {commentService} from '@lib/services/comment-service'
-import {onMount} from 'svelte'
-export function useCommunity(){const resource=createInfiniteResource(page=>commentService.recent(page,8));let stats=$state<{averageRating:number;comments:number;careers:number}|null>(null);let pageLoading=$state(true);onMount(async()=>{try{const[,value]=await Promise.all([resource.loadMore(),commentService.stats()]);stats=value}finally{pageLoading=false}});function text(content:unknown){if(typeof content==='string')return content;if(content&&typeof content==='object'&&'html'in content){const node=document.createElement('div');node.innerHTML=String((content as{html:string}).html);return node.textContent??''}return'Comentario enriquecido compartido con la comunidad.'}return{resource,text,get stats(){return stats},get pageLoading(){return pageLoading}}}
+import { createInfiniteResource } from "@lib/hooks/create-infinite-resource.svelte"
+import { commentService } from "@lib/services/comment-service"
+import { onMount } from "svelte"
+
+export function useCommunity() {
+	const resource = createInfiniteResource((page) =>
+		commentService.recent(page, 8),
+	)
+	let stats = $state<{
+		averageRating: number
+		comments: number
+		careers: number
+	} | null>(null)
+	let pageLoading = $state(true)
+	onMount(async () => {
+		try {
+			const [, value] = await Promise.all([
+				resource.loadMore(),
+				commentService.stats(),
+			])
+			stats = value
+		} finally {
+			pageLoading = false
+		}
+	})
+	function text(content: unknown) {
+		if (typeof content === "string") return content
+		if (content && typeof content === "object" && "html" in content) {
+			const node = document.createElement("div")
+			node.innerHTML = String((content as { html: string }).html)
+			return node.textContent ?? ""
+		}
+		return "Comentario enriquecido compartido con la comunidad."
+	}
+	return {
+		resource,
+		text,
+		get stats() {
+			return stats
+		},
+		get pageLoading() {
+			return pageLoading
+		},
+	}
+}

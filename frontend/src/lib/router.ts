@@ -59,9 +59,19 @@ export const router = new Router<RouteName>({
 	routes,
 	hash: false,
 	listen: "history",
+	// Query parameters belong to the destination route. Never merge them with
+	// parameters left behind by the route the user is leaving.
+	stripQuery: true,
 })
-export const navigate = (href: string) => {
+
+function locationFromHref(href: string) {
 	const url = new URL(href, window.location.origin)
-	const query = Object.fromEntries(url.searchParams.entries())
-	return router.push({ path: url.pathname, query, stripQuery: true })
+	return {
+		path: url.pathname,
+		query: Object.fromEntries(url.searchParams.entries()),
+		stripQuery: true as const,
+	}
 }
+
+export const navigate = (href: string) => router.push(locationFromHref(href))
+export const replaceRoute = (href: string) => router.replace(locationFromHref(href))
