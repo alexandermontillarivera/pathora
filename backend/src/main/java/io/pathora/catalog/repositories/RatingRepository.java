@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface RatingRepository extends JpaRepository<Rating, Long> {
+  @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
+  @org.springframework.data.jpa.repository.Query(
+      "delete from Rating rating where rating.user.id = :userId")
   void deleteAllByUserId(Long userId);
 
   boolean existsByUserIdAndCareerId(Long userId, Long careerId);

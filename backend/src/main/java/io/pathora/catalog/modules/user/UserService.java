@@ -76,7 +76,8 @@ public class UserService {
     notifications.deleteAllByUserId(id);
     passwordResetTokens.deleteAllByUserId(id);
     refreshTokens.deleteAllByUserId(id);
-    users.delete(user);
+    users.deleteById(user.getId());
+    users.flush();
   }
 
   private UserDto.Response response(io.pathora.catalog.entities.User user) {

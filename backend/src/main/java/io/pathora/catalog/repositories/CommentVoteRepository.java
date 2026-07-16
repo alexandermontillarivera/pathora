@@ -11,7 +11,13 @@ public interface CommentVoteRepository extends JpaRepository<CommentVote, Long> 
 
   void deleteAllByCommentId(Long commentId);
 
+  @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
+  @org.springframework.data.jpa.repository.Query(
+      "delete from CommentVote vote where vote.comment.user.id = :userId")
   void deleteAllByCommentUserId(Long userId);
 
+  @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
+  @org.springframework.data.jpa.repository.Query(
+      "delete from CommentVote vote where vote.user.id = :userId")
   void deleteAllByUserId(Long userId);
 }
