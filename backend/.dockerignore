@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.vscode
+target
+*.log
+Dockerfile.vercel
+wait-for-spring.sh

@@ -43,6 +43,24 @@ List endpoints accept `page` (1-based), `max` (1 to 100), and `order` (`ASC` or 
 
 Available variables are documented in `.env.example`. The application automatically loads an `.env` file located at the repository root or inside the `backend` directory.
 
+## Deploy on Render
+
+The repository includes a root-level `render.yaml` Blueprint and a production Dockerfile for the backend. In Render, create a new Blueprint from this repository and provide the secret values requested during the initial setup:
+
+- `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`
+- `JWT_SECRET`
+- `RESEND_API_KEY` and `RESEND_FROM`
+
+`DB_URL` must be a JDBC URL, for example:
+
+```text
+jdbc:postgresql://host:port/database?sslmode=require
+```
+
+The Blueprint deploys in Virginia, listens on Render's dynamic `PORT`, limits the database pool and JVM memory for the free instance, and checks `/api/actuator/health` before routing traffic.
+
+After Render assigns the service URL, update `CORS_ALLOWED_ORIGINS` only if the frontend domain differs from `https://pathora.apec-engineer.com`.
+
 ## Code Formatting
 
 ```powershell
