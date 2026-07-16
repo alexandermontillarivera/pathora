@@ -4,6 +4,10 @@ import { apiRequest, queryString } from "@lib/api/http-client"
 export const ratingService = {
 	summary: (careerId: number) =>
 		apiRequest<RatingSummary>(`/careers/${careerId}/ratings`),
+	mine: (careerId: number) =>
+		apiRequest<ApiRating | null>(`/careers/${careerId}/ratings/me`, {
+			authenticated: true,
+		}),
 	byUser: (userId: number, page = 1, max = 20) =>
 		apiRequest<PageResponse<ApiRating>>(
 			`/users/${userId}/ratings${queryString({ page, max, order: "DESC" })}`,

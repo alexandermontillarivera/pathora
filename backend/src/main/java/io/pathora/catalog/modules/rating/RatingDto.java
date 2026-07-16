@@ -24,14 +24,15 @@ public final class RatingDto {
       return new Response(
           rating.getId(),
           rating.getValue(),
-          new UserSummary(user.getId(), user.getFirstName(), user.getLastName()),
+          new UserSummary(
+              user.getId(), user.getFirstName(), user.getLastName(), user.getAvatarSeed()),
           new CareerSummary(rating.getCareer().getId(), rating.getCareer().getName()),
           rating.getCreatedAt(),
           rating.getUpdatedAt());
     }
   }
 
-  public record UserSummary(Long id, String firstName, String lastName) {}
+  public record UserSummary(Long id, String firstName, String lastName, String avatarSeed) {}
 
   public record CareerSummary(Long id, String name) {}
 

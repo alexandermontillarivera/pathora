@@ -6,6 +6,8 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 
 public interface SavedCareerRepository extends JpaRepository<SavedCareer, Long> {
+  void deleteAllByUserId(Long userId);
+
   @EntityGraph(attributePaths = {"career", "career.school"})
   Page<SavedCareer> findAllByUserId(Long userId, Pageable pageable);
 

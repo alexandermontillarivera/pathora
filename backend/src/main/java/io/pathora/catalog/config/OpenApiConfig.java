@@ -15,9 +15,9 @@ public class OpenApiConfig {
   OpenAPI careersOpenApi() {
     Info info =
         new Info()
-            .title("Pathora Academic Catalog API")
+            .title("API del catálogo académico de Pathora")
             .version("1.0.0")
-            .description("Academic school and career catalog management.")
+            .description("Gestión del catálogo académico de escuelas y carreras.")
             .contact(new Contact().name("Pathora"));
 
     return new OpenAPI()

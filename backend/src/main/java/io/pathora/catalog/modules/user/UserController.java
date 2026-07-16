@@ -5,13 +5,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/users")
-@Tag(name = "Users", description = "Public profiles and authenticated profile settings")
+@Tag(name = "Usuarios", description = "Perfiles públicos y configuración del perfil autenticado")
 public class UserController {
   private final UserService service;
 
@@ -20,17 +21,26 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get a public user profile")
+  @Operation(summary = "Obtener el perfil público de un usuario")
   ApiResponse<UserDto.Response> findOne(@PathVariable Long id) {
-    return ApiResponse.ok("User retrieved.", service.findById(id));
+    return ApiResponse.ok("Usuario obtenido correctamente.", service.findById(id));
   }
 
   @PutMapping("/me")
-  @Operation(summary = "Update the authenticated profile")
+  @Operation(summary = "Actualizar el perfil autenticado")
   @SecurityRequirement(name = "bearerAuth")
   ApiResponse<UserDto.Response> update(
       @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UserDto.UpdateRequest request) {
     return ApiResponse.ok(
-        "Profile updated.", service.update(Long.valueOf(jwt.getSubject()), request));
+        "Perfil actualizado correctamente.",
+        service.update(Long.valueOf(jwt.getSubject()), request));
+  }
+
+  @DeleteMapping("/me")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(summary = "Eliminar definitivamente la cuenta autenticada")
+  @SecurityRequirement(name = "bearerAuth")
+  void delete(@AuthenticationPrincipal Jwt jwt) {
+    service.delete(Long.valueOf(jwt.getSubject()));
   }
 }

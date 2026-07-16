@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1")
-@Tag(name = "Ratings", description = "Career rating community")
+@Tag(name = "Valoraciones", description = "Valoraciones de carreras de la comunidad")
 public class RatingController {
   private final RatingService service;
 
@@ -23,42 +23,55 @@ public class RatingController {
   }
 
   @GetMapping("/careers/{careerId}/ratings")
-  @Operation(summary = "Get rating summary")
+  @Operation(summary = "Obtener el resumen de valoraciones")
   ApiResponse<RatingDto.Summary> summary(@PathVariable Long careerId) {
-    return ApiResponse.ok("Ratings retrieved.", service.summary(careerId));
+    return ApiResponse.ok("Valoraciones obtenidas correctamente.", service.summary(careerId));
+  }
+
+  @GetMapping("/careers/{careerId}/ratings/me")
+  @Operation(summary = "Obtener mi valoración de una carrera")
+  @SecurityRequirement(name = "bearerAuth")
+  ApiResponse<RatingDto.Response> findMine(
+      @PathVariable Long careerId, @AuthenticationPrincipal Jwt jwt) {
+    return ApiResponse.ok(
+        "Valoración personal obtenida correctamente.", service.findMine(careerId, userId(jwt)));
   }
 
   @GetMapping("/users/{userId}/ratings")
-  @Operation(summary = "List a user's public ratings")
+  @Operation(summary = "Listar las valoraciones públicas de un usuario")
   ApiResponse<PageResponse<RatingDto.Response>> findByUser(
       @PathVariable Long userId, @Valid @ModelAttribute PaginationRequest pagination) {
-    return ApiResponse.ok("User ratings retrieved.", service.findByUser(userId, pagination));
+    return ApiResponse.ok(
+        "Valoraciones del usuario obtenidas correctamente.",
+        service.findByUser(userId, pagination));
   }
 
   @PostMapping("/careers/{careerId}/ratings")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Rate a career")
+  @Operation(summary = "Valorar una carrera")
   @SecurityRequirement(name = "bearerAuth")
   ApiResponse<RatingDto.Response> create(
       @PathVariable Long careerId,
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody RatingDto.Request request) {
-    return ApiResponse.ok("Rating created.", service.create(careerId, userId(jwt), request));
+    return ApiResponse.ok(
+        "Valoración creada correctamente.", service.create(careerId, userId(jwt), request));
   }
 
   @PutMapping("/ratings/{id}")
-  @Operation(summary = "Edit your rating")
+  @Operation(summary = "Editar una valoración propia")
   @SecurityRequirement(name = "bearerAuth")
   ApiResponse<RatingDto.Response> update(
       @PathVariable Long id,
       @AuthenticationPrincipal Jwt jwt,
       @Valid @RequestBody RatingDto.Request request) {
-    return ApiResponse.ok("Rating updated.", service.update(id, userId(jwt), request));
+    return ApiResponse.ok(
+        "Valoración actualizada correctamente.", service.update(id, userId(jwt), request));
   }
 
   @DeleteMapping("/ratings/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Delete your rating")
+  @Operation(summary = "Eliminar una valoración propia")
   @SecurityRequirement(name = "bearerAuth")
   void delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
     service.delete(id, userId(jwt));

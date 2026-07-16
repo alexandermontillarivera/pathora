@@ -43,6 +43,14 @@ public class RatingService {
     return PageResponse.from(page, pagination);
   }
 
+  public RatingDto.Response findMine(Long careerId, Long userId) {
+    ensureCareer(careerId);
+    return ratings
+        .findByUserIdAndCareerId(userId, careerId)
+        .map(RatingDto.Response::from)
+        .orElse(null);
+  }
+
   @Transactional
   public RatingDto.Response create(Long careerId, Long userId, RatingDto.Request request) {
     var existing = ratings.findByUserIdAndCareerId(userId, careerId);
@@ -68,19 +76,23 @@ public class RatingService {
 
   private Rating owned(Long id, Long userId) {
     var rating =
-        ratings.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rating not found."));
+        ratings
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró la valoración."));
     if (!rating.getUser().getId().equals(userId))
-      throw new ForbiddenException("You can only modify your own rating.");
+      throw new ForbiddenException("Solo puedes modificar tus propias valoraciones.");
     return rating;
   }
 
   private io.pathora.catalog.entities.User user(Long id) {
-    return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    return users
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario."));
   }
 
   private io.pathora.catalog.entities.Career ensureCareer(Long id) {
     return careers
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Career not found."));
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró la carrera."));
   }
 }

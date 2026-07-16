@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte"
 	import PageLoader from "@components/ui/page-loader.svelte"
+	import PageState from "@components/ui/page-state.svelte"
 	import Icon from "@components/ui/icon.svelte"
 	import { useActivityPage } from "./use-activity.svelte"
 	const page=useActivityPage()
@@ -8,7 +9,9 @@
 
 <svelte:head><title>Tu actividad — Pathora</title></svelte:head>
 <main class="page-shell page">
-	{#if page.pageLoading}<PageLoader />{/if}
+	{#if page.pageLoading}<PageLoader />
+	{:else if page.resource.error && !page.resource.records.length}<PageState title="No pudimos cargar tu actividad." message={page.resource.error} onRetry={page.resource.reload} />
+	{:else}
 	<header>
 		<div>
 			<span>Centro personal</span>
@@ -50,7 +53,7 @@
 						}).format(new Date(item.createdAt))}</time
 					>
 				</div></button
-			>{/each}{#if !page.pageLoading && !page.resource.loading && !page.visible.length}<div
+			>{/each}{#if page.resource.error}<PageState compact title="No pudimos cargar más actividad." message={page.resource.error} onRetry={page.resource.loadMore} />{:else if !page.resource.loading && !page.visible.length}<div
 				class="empty"
 			>
 				<h2>Todo está al día.</h2>
@@ -62,6 +65,7 @@
 			onVisible={page.resource.loadMore}
 		/>
 	</section>
+	{/if}
 </main>
 
 <style>

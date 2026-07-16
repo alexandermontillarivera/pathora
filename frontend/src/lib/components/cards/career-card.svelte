@@ -1,17 +1,27 @@
 <script lang="ts">
 	import { link } from "@dvcol/svelte-simple-router/action"
 	import Icon from "@components/ui/icon.svelte"
+	import ConfirmDialog from "@components/ui/confirm-dialog.svelte"
 	import type { Career } from "@lib/types"
 	import { currentUser } from '@stores/auth'
 	import { savedService } from '@lib/services/saved-service'
+	import { savedCareerIds, setCareerSaved } from '@stores/saved-careers'
 	import { markdownSummary } from '@lib/utils/markdown'
 
 	interface Props {
 		career: Career
+		initiallySaved?: boolean
+		onRemoved?: (careerId: number) => void
 	}
-	let { career }: Props = $props()
-	let saved = $state(false)
-	async function toggleSaved(event:MouseEvent){event.stopPropagation();saved=!saved;try{saved?await savedService.add(career.id):await savedService.remove(career.id)}catch{saved=!saved}}
+	let { career, initiallySaved = false, onRemoved }: Props = $props()
+	let localSaved = $state(false)
+	$effect(() => {
+		if (initiallySaved) localSaved = true
+	})
+	let saved = $derived(localSaved || $savedCareerIds.has(career.id))
+	let removeDialog = $state<ConfirmDialog>()
+	async function removeSaved(){await savedService.remove(career.id);localSaved=false;setCareerSaved(career.id,false);onRemoved?.(career.id)}
+	async function toggleSaved(event:MouseEvent){event.stopPropagation();if(saved){removeDialog?.open();return}localSaved=true;setCareerSaved(career.id,true);try{await savedService.add(career.id)}catch{localSaved=false;setCareerSaved(career.id,false)}}
 </script>
 
 <article class="card">
@@ -27,7 +37,7 @@
 		>{#if $currentUser}<button
 			class:saved
 			onclick={toggleSaved}
-			aria-label="Guardar carrera"
+			aria-label={saved ? `Quitar ${career.name} de guardadas` : `Guardar ${career.name}`}
 			><Icon name={saved ? "bookmark" : "heart"} size={18} /></button>{/if}
 	</div>
 	<div class="body">
@@ -43,6 +53,16 @@
 		</div>
 	</div>
 </article>
+
+<ConfirmDialog
+	bind:this={removeDialog}
+	title="¿Quitar carrera guardada?"
+	description={`${career.name} dejará de aparecer en tu lista de carreras guardadas.`}
+	confirmLabel="Sí, quitar de guardadas"
+	pendingLabel="Quitando…"
+	icon="bookmark"
+	onConfirm={removeSaved}
+/>
 
 <style>
 	.card {

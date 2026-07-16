@@ -30,7 +30,7 @@ public class SchoolService {
             .orElseThrow(
                 () ->
                     new io.pathora.catalog.shared.exception.ResourceNotFoundException(
-                        "School not found.")));
+                        "No se encontró la escuela.")));
   }
 
   private SchoolDto.Response response(io.pathora.catalog.entities.School school) {

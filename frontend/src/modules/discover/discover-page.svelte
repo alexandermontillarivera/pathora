@@ -1,11 +1,13 @@
 <script lang="ts">
- import PageLoader from "@components/ui/page-loader.svelte";import CareerCard from "@components/cards/career-card.svelte";import{link}from"@dvcol/svelte-simple-router/action";import Icon from "@components/ui/icon.svelte";import{useDiscover}from"./use-discover.svelte";const page=useDiscover();let{careers,schools,loading,loadError,totalCareers,featured,filtered}=$derived(page);const{form,modes,search}=page
+ import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import CareerCard from "@components/cards/career-card.svelte";import{link}from"@dvcol/svelte-simple-router/action";import Icon from "@components/ui/icon.svelte";import{useDiscover}from"./use-discover.svelte";const page=useDiscover();let{careers,schools,loading,loadError,totalCareers,featured,filtered}=$derived(page);const{form,modes,search}=page
 </script>
 
 <svelte:head><title>Pathora — Encuentra tu camino</title></svelte:head>
 
 <main>
-	{#if loading}<PageLoader />{/if}
+	{#if loading}<PageLoader />
+	{:else if loadError}<div class="page-shell"><PageState title="No pudimos cargar Pathora." message={loadError} onRetry={page.reload} /></div>
+	{:else}
 	<section class="hero page-shell">
 		<div class="hero-copy">
 			<span class="kicker reveal">Decide con claridad</span>
@@ -60,11 +62,7 @@
 		<div class="career-grid">
 			{#each filtered as career}<CareerCard {career} />{/each}
 		</div>
-		{#if loadError}<div class="empty" role="alert">
-				<h3>No pudimos cargar las carreras.</h3>
-				<p>{loadError}</p>
-			</div>{/if}
-		{#if !loading && filtered.length === 0}<div class="empty">
+		{#if filtered.length === 0}<div class="empty">
 				<span>Sin carreras en esta modalidad</span>
 				<h3>Prueba con otra opción.</h3>
 				<button onclick={() => (form.mode = "Todas")}>Ver todas</button>
@@ -106,6 +104,7 @@
 			<span>— El principio Pathora</span>
 		</div>
 	</section>
+	{/if}
 </main>
 
 <style>

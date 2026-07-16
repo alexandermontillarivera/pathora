@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1/careers")
-@Tag(name = "Careers", description = "Academic career catalog management")
+@Tag(name = "Carreras", description = "Consulta del catálogo académico de carreras")
 public class CareerController {
   private final CareerService service;
 
@@ -26,7 +26,7 @@ public class CareerController {
   }
 
   @GetMapping
-  @Operation(summary = "List careers, search by name, and filter by school")
+  @Operation(summary = "Listar carreras, buscar por nombre y filtrar por escuela")
   ApiResponse<PageResponse<CareerDto.Response>> findAll(
       @RequestParam(required = false) String name,
       @RequestParam(required = false) Long schoolId,
@@ -36,14 +36,14 @@ public class CareerController {
     var data = service.findAll(name, schoolId, studyMode, status, pagination);
     var message =
         data.records().isEmpty()
-            ? "No careers matched the provided criteria."
-            : "Careers retrieved.";
+            ? "No se encontraron carreras con los criterios indicados."
+            : "Carreras obtenidas correctamente.";
     return ApiResponse.ok(message, data);
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get career details")
+  @Operation(summary = "Obtener el detalle de una carrera")
   ApiResponse<CareerDto.Response> findOne(@PathVariable Long id) {
-    return ApiResponse.ok("Career retrieved.", service.findById(id));
+    return ApiResponse.ok("Carrera obtenida correctamente.", service.findById(id));
   }
 }

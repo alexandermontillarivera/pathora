@@ -1,9 +1,11 @@
 import type { PageResponse } from "@lib/api/api-types"
+import { errorMessage, errorStatus } from "@lib/utils/app-error"
 
 export function createInfiniteResource<T>(
 	loader: (page: number) => Promise<PageResponse<T>>,
 ) {
 	let error = $state<string | null>(null)
+	let status = $state<number | undefined>()
 	let loading = $state(false)
 	let records = $state<T[]>([])
 	let hasNext = $state(true)
@@ -14,6 +16,7 @@ export function createInfiniteResource<T>(
 		if (loading || !hasNext) return
 		loading = true
 		error = null
+		status = undefined
 		try {
 			const next = await loader(page + 1)
 			records = [...records, ...next.records]
@@ -22,10 +25,8 @@ export function createInfiniteResource<T>(
 			totalRecords = next.totalRecords
 			totalPages = next.totalPages
 		} catch (cause) {
-			error =
-				cause instanceof Error
-					? cause.message
-					: "No pudimos cargar más resultados."
+			error = errorMessage(cause)
+			status = errorStatus(cause)
 		} finally {
 			loading = false
 		}
@@ -50,6 +51,9 @@ export function createInfiniteResource<T>(
 		},
 		get error() {
 			return error
+		},
+		get errorStatus() {
+			return status
 		},
 		get hasNext() {
 			return hasNext

@@ -18,7 +18,7 @@ Prerequisites: JDK 21.
 .\mvnw.cmd spring-boot:run
 ```
 
-The `CatalogDataInitializer` seeds schools, careers, curricula, and sample data automatically on startup.
+The catalog is read exclusively from PostgreSQL. Starting the API never inserts, rewrites, or deletes catalog data.
 
 - API: `http://localhost:4000/api/v1/careers`
 - Swagger UI: `http://localhost:4000/api/swagger-ui.html`

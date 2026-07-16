@@ -1,5 +1,5 @@
 <script lang="ts">
- import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import Icon from "@components/ui/icon.svelte";import{useSearch}from"./use-search.svelte";const page=useSearch();let{schools,pageLoading,results,resultCount}=$derived(page);const{filters,resource,submit,clear,toggleSchool,toggleMode,setMinimumRating}=page
+ import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import Icon from "@components/ui/icon.svelte";import{useSearch}from"./use-search.svelte";const page=useSearch();let{schools,pageLoading,results,resultCount}=$derived(page);const{filters,resource,submit,clear,toggleSchool,toggleMode,setMinimumRating}=page
 </script>
 
 <svelte:head><title>Buscar carreras — Pathora</title></svelte:head>
@@ -81,7 +81,8 @@
 			>
 		</aside>
 		<section>
-			{#if results.length}<div class="grid">
+			{#if resource.error}<PageState compact title="No pudimos buscar carreras." message={resource.error} onRetry={resource.reload} />
+			{:else if results.length}<div class="grid">
 					{#each results as career}<CareerCard {career} />{/each}
 				</div>{:else if !pageLoading}<div class="empty">
 					<i><Icon name="search" size={25} /></i><span>Sin coincidencias</span>
@@ -89,7 +90,7 @@
 					<p>Prueba con menos filtros o utiliza términos más generales.</p>
 					<button onclick={clear}>Limpiar filtros</button>
 			</div>{/if}<InfiniteSentinel
-					disabled={pageLoading || !resource.hasNext || resource.loading}
+					disabled={pageLoading || !!resource.error || !resource.hasNext || resource.loading}
 				loading={resource.loading && !pageLoading}
 				onVisible={resource.loadMore}
 			/>

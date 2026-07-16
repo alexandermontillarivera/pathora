@@ -32,12 +32,13 @@ public class CommentService {
     this.notifications = notifications;
   }
 
-  public PageResponse<CommentDto.Response> findAll(Long careerId, PaginationRequest pagination) {
+  public PageResponse<CommentDto.Response> findAll(
+      Long careerId, PaginationRequest pagination, Long currentUserId) {
     ensureCareer(careerId);
     var page =
         comments
             .findAllByCareerIdAndParentIsNull(careerId, pagination.pageable("createdAt"))
-            .map(this::response);
+            .map(comment -> response(comment, currentUserId));
     return PageResponse.from(page, pagination);
   }
 
@@ -46,20 +47,34 @@ public class CommentService {
     validate(request.content());
     var comment =
         new CareerComment(user(userId), ensureCareer(careerId), request.content().toString());
-    return response(comments.save(comment));
+    return response(comments.save(comment), userId);
   }
 
-  public PageResponse<CommentDto.Response> findRecent(PaginationRequest pagination) {
-    var page = comments.findAllByParentIsNull(pagination.pageable("createdAt")).map(this::response);
+  public PageResponse<CommentDto.Response> findRecent(
+      PaginationRequest pagination, Long currentUserId) {
+    var page =
+        comments
+            .findAllByParentIsNull(pagination.pageable("createdAt"))
+            .map(comment -> response(comment, currentUserId));
     return PageResponse.from(page, pagination);
   }
 
-  public PageResponse<CommentDto.Response> findByUser(Long userId, PaginationRequest pagination) {
+  public CommentDto.Response findOne(Long id, Long currentUserId) {
+    var comment =
+        comments
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró el comentario."));
+    var root = comment.getParent() == null ? comment : comment.getParent();
+    return response(root, currentUserId);
+  }
+
+  public PageResponse<CommentDto.Response> findByUser(
+      Long userId, PaginationRequest pagination, Long currentUserId) {
     user(userId);
     var page =
         comments
             .findAllByUserIdAndParentIsNull(userId, pagination.pageable("createdAt"))
-            .map(this::response);
+            .map(comment -> response(comment, currentUserId));
     return PageResponse.from(page, pagination);
   }
 
@@ -69,7 +84,7 @@ public class CommentService {
     var parent =
         comments
             .findById(parentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró el comentario."));
     var root = parent.getParent() == null ? parent : parent.getParent();
     var author = user(userId);
     var reply =
@@ -83,7 +98,7 @@ public class CommentService {
               author.getFirstName() + " respondió a tu comentario",
               "Hay una nueva respuesta en " + root.getCareer().getName(),
               "/careers/" + root.getCareer().getId()));
-    return response(reply);
+    return response(reply, userId);
   }
 
   @Transactional
@@ -91,7 +106,7 @@ public class CommentService {
     var comment =
         comments
             .findById(commentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró el comentario."));
     var vote =
         votes
             .findByCommentIdAndUserId(commentId, userId)
@@ -115,7 +130,7 @@ public class CommentService {
     validate(request.content());
     var comment = owned(id, userId);
     comment.update(request.content().toString());
-    return response(comment);
+    return response(comment, userId);
   }
 
   @Transactional
@@ -135,36 +150,44 @@ public class CommentService {
   private void validate(JsonNode content) {
     if ((!content.isObject() && !content.isArray()) || content.isEmpty())
       throw new IllegalArgumentException(
-          "Rich-text content must be a non-empty JSON object or array.");
+          "El contenido enriquecido debe ser un objeto o arreglo JSON que no esté vacío.");
     if (content.toString().length() > MAX_CONTENT_LENGTH)
-      throw new IllegalArgumentException("Comment content is too large.");
+      throw new IllegalArgumentException("El contenido del comentario es demasiado extenso.");
   }
 
   private CareerComment owned(Long id, Long userId) {
     var comment =
         comments
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró el comentario."));
     if (!comment.getUser().getId().equals(userId))
-      throw new ForbiddenException("You can only modify your own comment.");
+      throw new ForbiddenException("Solo puedes modificar tus propios comentarios.");
     return comment;
   }
 
   private io.pathora.catalog.entities.User user(Long id) {
-    return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    return users
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario."));
   }
 
-  private CommentDto.Response response(CareerComment comment) {
+  private CommentDto.Response response(CareerComment comment, Long currentUserId) {
     var replies =
         comment.getParent() == null
             ? comments.findAllByParentIdOrderByCreatedAtAsc(comment.getId()).stream()
-                .map(this::response)
+                .map(reply -> response(reply, currentUserId))
                 .toList()
             : java.util.List.<CommentDto.Response>of();
     return CommentDto.Response.from(
         comment,
         votes.countByCommentIdAndUseful(comment.getId(), true),
         votes.countByCommentIdAndUseful(comment.getId(), false),
+        currentUserId == null
+            ? null
+            : votes
+                .findByCommentIdAndUserId(comment.getId(), currentUserId)
+                .map(io.pathora.catalog.entities.CommentVote::isUseful)
+                .orElse(null),
         replies);
   }
 
@@ -178,6 +201,6 @@ public class CommentService {
   private io.pathora.catalog.entities.Career ensureCareer(Long id) {
     return careers
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Career not found."));
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró la carrera."));
   }
 }

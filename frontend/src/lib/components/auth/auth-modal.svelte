@@ -4,6 +4,8 @@
 	import { currentUser } from "@stores/auth"
 	import type { AuthModalMode } from "@stores/ui"
 	import Icon from "@components/ui/icon.svelte"
+	import SelectInput from "@components/form/select-input.svelte"
+	import { countryOptions, detectCountry } from "@lib/utils/countries"
 
 	let {
 		onClose,
@@ -22,6 +24,7 @@
 	let lastName = $state("")
 	let email = $state("")
 	let password = $state("")
+	let country = $state(detectCountry())
 
 	async function submit() {
 		loading = true
@@ -33,7 +36,13 @@
 				currentUser.set((await authService.login(email, password)).user)
 			} else {
 				currentUser.set(
-					(await authService.register({ firstName, lastName, email, password }))
+					(await authService.register({
+						firstName,
+						lastName,
+						email,
+						password,
+						country: country || undefined,
+					}))
 						.user,
 				)
 			}
@@ -126,6 +135,11 @@
 							autocomplete="family-name"
 						/>
 					</div>{/if}
+				{#if mode === "register"}<SelectInput
+						label="País"
+						bind:value={country}
+						options={countryOptions}
+					/>{/if}
 				<TextInput
 					label="Correo"
 					type="email"
@@ -241,9 +255,10 @@
 		gap: 0.75rem;
 	}
 	.primary {
+		width: 100%;
 		margin-top: 0.5rem;
 		border: 0;
-		margin: 0px auto;
+		margin-inline: 0;
 		border-radius: 13px;
 		padding: 1rem 1.1rem;
 		background: var(--ink);

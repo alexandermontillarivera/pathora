@@ -1,5 +1,5 @@
 <script lang="ts">
- import ProfileSettings from "@components/profile/profile-settings.svelte";import CommentThread from "@components/comments/comment-thread.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import Icon from "@components/ui/icon.svelte";import{openAuthModal}from"@stores/ui";import{useProfile,type ProfileTab}from"./use-profile.svelte";const page=useProfile();let{tab,user,saved,comments,ratings,loading,error}=$derived(page);const{text}=page
+ import ProfileSettings from "@components/profile/profile-settings.svelte";import CountryDisplay from "@components/profile/country-display.svelte";import UserAvatar from "@components/profile/user-avatar.svelte";import CommentThread from "@components/comments/comment-thread.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import ConfirmDialog from "@components/ui/confirm-dialog.svelte";import Icon from "@components/ui/icon.svelte";import{openAuthModal}from"@stores/ui";import{currentUser}from"@stores/auth";import{useProfile,type ProfileTab}from"./use-profile.svelte";const page=useProfile();let{tab,user,saved,comments,ratings,loading,error}=$derived(page);let displayUser=$derived($currentUser??user);let ratingDialog=$state<ConfirmDialog>();let ratingToDelete=$state<{id:number;name:string}>();function askToRemoveRating(id:number,name:string){ratingToDelete={id,name};ratingDialog?.open()}async function confirmRatingRemoval(){if(ratingToDelete)await page.removeRating(ratingToDelete.id)}
 </script>
 
 <svelte:head>
@@ -7,19 +7,24 @@
 </svelte:head>
 <main class="page-shell page">
 	{#if loading}<PageLoader />
-	{:else if user}
+	{:else if displayUser}
 		<section class="summary">
-			<div class="avatar">{user.firstName[0]}{user.lastName[0]}</div>
+			<div class="avatar"><UserAvatar
+				seed={displayUser.avatarSeed}
+				initials={`${displayUser.firstName[0]}${displayUser.lastName[0]}`}
+				name={`${displayUser.firstName} ${displayUser.lastName}`}
+				size={112}
+			/></div>
 			<div>
 				<span>Tu espacio personal</span>
-				<h1>{user.firstName} {user.lastName}</h1>
+				<h1>{displayUser.firstName} {displayUser.lastName}</h1>
 				<p>
-					{user.description ||
+					{displayUser.description ||
 						"Completa tu descripción para que la comunidad te conozca."}
 				</p>
 				<small
-					>{user.country ?? "País no indicado"} · Miembro desde {new Date(
-						user.createdAt,
+					><CountryDisplay country={displayUser.country} /> · Miembro desde {new Date(
+						displayUser.createdAt,
 					).getFullYear()}</small
 				>
 			</div>
@@ -41,7 +46,7 @@
 		{#if tab === "saved"}<section>
 				<h2>Carreras guardadas.</h2>
 				<div class="grid">
-					{#each saved as career}<CareerCard {career} />{/each}
+					{#each saved as career}<CareerCard {career} initiallySaved onRemoved={page.removeSaved} />{/each}
 				</div>
 				{#if !saved.length}<div class="empty">
 						<h3>Aún no guardas carreras.</h3>
@@ -56,14 +61,19 @@
 								userId: item.author.id,
 								name: `${item.author.firstName} ${item.author.lastName}`,
 								initials: `${item.author.firstName[0]}${item.author.lastName[0]}`,
+								avatarSeed: item.author.avatarSeed,
 								time: new Intl.DateTimeFormat("es", {
 									dateStyle: "medium",
 								}).format(new Date(item.createdAt)),
-								text: text(item.content),
+								content: item.content,
 								rating: 5,
 							}}
 							career={item.career.name}
+							careerId={item.career.id}
 							useful={item.useful}
+							notUseful={item.notUseful}
+							currentVote={item.currentVote}
+							onDeleted={page.removeComment}
 						/>{/each}
 				</div>
 				{#if !comments.length}<div class="empty">
@@ -81,9 +91,7 @@
 							</div>
 							<button
 								aria-label="Eliminar valoración"
-								onclick={async () => {
-									await page.removeRating(rating.id)
-								}}><Icon name="trash" size={15} /></button
+								onclick={() => askToRemoveRating(rating.id, rating.career.name)}><Icon name="trash" size={15} /></button
 							>
 						</article>{/each}
 				</div>
@@ -98,6 +106,14 @@
 			<button onclick={openAuthModal}>Iniciar sesión</button>
 		</div>{/if}
 </main>
+
+<ConfirmDialog
+	bind:this={ratingDialog}
+	title="¿Eliminar valoración?"
+	description={`Tu valoración de ${ratingToDelete?.name ?? "esta carrera"} desaparecerá y dejará de contar en su promedio.`}
+	confirmLabel="Sí, eliminar valoración"
+	onConfirm={confirmRatingRemoval}
+/>
 
 <style>
 	.page {
@@ -118,12 +134,8 @@
 	.avatar {
 		width: 112px;
 		height: 112px;
-		border-radius: 30px;
-		background: var(--accent);
 		display: grid;
 		place-items: center;
-		font-family: var(--display);
-		font-size: 2rem;
 	}
 	.summary span {
 		font-size: 0.66rem;

@@ -8,10 +8,16 @@ export const userService = {
 		lastName: string
 		description: string
 		country?: string
+		avatarSeed?: string
 	}) =>
 		apiRequest<ApiUser>("/users/me", {
 			method: "PUT",
 			authenticated: true,
 			body: input,
+		}),
+	removeCurrent: () =>
+		apiRequest<void>("/users/me", {
+			method: "DELETE",
+			authenticated: true,
 		}),
 }

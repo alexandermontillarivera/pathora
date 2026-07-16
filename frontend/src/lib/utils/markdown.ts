@@ -4,6 +4,11 @@ const escapeHtml = (value: string) =>
 		.replaceAll("<", "&lt;")
 		.replaceAll(">", "&gt;")
 		.replaceAll('"', "&quot;")
+
+const formatInline = (value: string) =>
+	escapeHtml(value)
+		.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+		.replace(/\*([^*]+)\*/g, "<em>$1</em>")
 export function markdownToHtml(markdown: string) {
 	const lines = markdown.replaceAll("\r", "").split("\n")
 	let html = ""
@@ -22,19 +27,19 @@ export function markdownToHtml(markdown: string) {
 				html += "<ul>"
 				inList = true
 			}
-			html += `<li>${escapeHtml(line.slice(2))}</li>`
+			html += `<li>${formatInline(line.slice(2))}</li>`
 			continue
 		}
 		if (inList) {
 			html += "</ul>"
 			inList = false
 		}
-		if (line.startsWith("### ")) html += `<h3>${escapeHtml(line.slice(4))}</h3>`
+		if (line.startsWith("### ")) html += `<h3>${formatInline(line.slice(4))}</h3>`
 		else if (line.startsWith("## "))
-			html += `<h2>${escapeHtml(line.slice(3))}</h2>`
+			html += `<h2>${formatInline(line.slice(3))}</h2>`
 		else if (line.startsWith("> "))
-			html += `<blockquote>${escapeHtml(line.slice(2))}</blockquote>`
-		else html += `<p>${escapeHtml(line)}</p>`
+			html += `<blockquote>${formatInline(line.slice(2))}</blockquote>`
+		else html += `<p>${formatInline(line)}</p>`
 	}
 	if (inList) html += "</ul>"
 	return html

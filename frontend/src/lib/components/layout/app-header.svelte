@@ -1,8 +1,9 @@
 <script lang="ts">
 	import NotificationCenter from "@components/notifications/notification-center.svelte"
+	import AccountMenu from "@components/auth/account-menu.svelte"
 	import { link } from "@dvcol/svelte-simple-router/action"
 	import LogoMark from "@components/brand/logo-mark.svelte"
-	import { currentUser, clearSession } from "@stores/auth"
+	import { currentUser } from "@stores/auth"
 	import Icon from "@components/ui/icon.svelte"
 	import { openAuthModal } from "@stores/ui"
 	import { router } from "@lib/router"
@@ -39,15 +40,7 @@
 					>Registrarse</button
 				><button class="login" onclick={() => openAuthModal("login")}
 					>Iniciar sesión</button
-				>{:else}<button
-					class="login"
-					onclick={clearSession}
-					title="Cerrar sesión">{$currentUser.firstName}</button
-				>{/if}{#if $currentUser}<NotificationCenter /><a
-				class="avatar"
-				href="/profile"
-				use:link
-				aria-label="Ver perfil"><Icon name="user" size={18} /></a>{/if}<button
+				>{:else}<NotificationCenter /><AccountMenu />{/if}<button
 				class="mobile-menu"
 				onclick={() => (open = !open)}
 				aria-label="Abrir menú"><Icon name={open ? "close" : "menu"} /></button
@@ -134,15 +127,6 @@
 	.register:hover {
 		background: rgba(20, 20, 17, 0.06);
 	}
-	.avatar {
-		width: 38px;
-		height: 38px;
-		border-radius: 12px;
-		display: grid;
-		place-items: center;
-		background: var(--surface-2);
-		color: inherit;
-	}
 	.mobile-menu {
 		display: none;
 		width: 40px;
@@ -152,9 +136,6 @@
 	@media (max-width: 720px) {
 		.login,
 		.register,
-		.avatar {
-			display: none;
-		}
 		.mobile-menu {
 			display: grid;
 		}

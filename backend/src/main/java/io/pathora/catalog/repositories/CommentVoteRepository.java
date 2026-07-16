@@ -10,4 +10,8 @@ public interface CommentVoteRepository extends JpaRepository<CommentVote, Long> 
   long countByCommentIdAndUseful(Long commentId, boolean useful);
 
   void deleteAllByCommentId(Long commentId);
+
+  void deleteAllByCommentUserId(Long userId);
+
+  void deleteAllByUserId(Long userId);
 }

@@ -28,6 +28,7 @@ The Svelte SPA is deployed to Vercel as an independent application and is availa
 | TypeScript | 6.x |
 | @dvcol/svelte-simple-router | 2.7 |
 | @tabler/icons-svelte | 3.44 |
+| @mlc-ai/web-llm | 0.2.84 |
 
 ### Backend
 
@@ -162,6 +163,18 @@ The SPA starts at `http://localhost:5173`.
 | `VITE_API_URL` | No | `http://localhost:4000/v1` | Backend API base URL |
 
 In production, set `VITE_API_URL` to the full Render API URL, such as `https://pathora-60cw.onrender.com/api/v1`.
+
+## Local AI assistant
+
+Authenticated users can enable **P local** from Profile → Settings → Local intelligence. Pathora then downloads `Qwen2.5-3B-Instruct-q4f16_1-MLC` into the browser cache and runs inference in a dedicated Web Worker through WebLLM and WebGPU.
+
+- Prompts and generated answers stay on the user's device.
+- Career and curriculum facts are retrieved from the regular Pathora API and injected as grounded context.
+- Model responses stream into the floating chat without blocking the main UI.
+- The preference is stored per Pathora user in the browser; cached model files are shared by that browser profile.
+- Disabling the assistant unloads it but preserves the download. Settings provides a separate action to delete the cached model.
+
+The recommended model requires approximately 2.5 GB of GPU memory plus browser storage. It needs a secure context (`https://` or `localhost`) and a WebGPU-compatible browser/device. No backend AI key or additional environment variable is required.
 
 ## API Overview
 

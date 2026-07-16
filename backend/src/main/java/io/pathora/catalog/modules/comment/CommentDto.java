@@ -23,28 +23,34 @@ public final class CommentDto {
       CareerSummary career,
       long useful,
       long notUseful,
+      Boolean currentVote,
       java.util.List<Response> replies,
       Instant createdAt,
       Instant updatedAt) {
     static Response from(
-        CareerComment comment, long useful, long notUseful, java.util.List<Response> replies) {
+        CareerComment comment,
+        long useful,
+        long notUseful,
+        Boolean currentVote,
+        java.util.List<Response> replies) {
       var user = comment.getUser();
       var career = comment.getCareer();
       return new Response(
           comment.getId(),
           comment.getParent() == null ? null : comment.getParent().getId(),
           JSON.readTree(comment.getContent()),
-          new Author(user.getId(), user.getFirstName(), user.getLastName()),
+          new Author(user.getId(), user.getFirstName(), user.getLastName(), user.getAvatarSeed()),
           new CareerSummary(career.getId(), career.getName()),
           useful,
           notUseful,
+          currentVote,
           replies,
           comment.getCreatedAt(),
           comment.getUpdatedAt());
     }
   }
 
-  public record Author(Long id, String firstName, String lastName) {}
+  public record Author(Long id, String firstName, String lastName, String avatarSeed) {}
 
   public record CareerSummary(Long id, String name) {}
 

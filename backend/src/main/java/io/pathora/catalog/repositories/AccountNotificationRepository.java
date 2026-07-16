@@ -6,6 +6,8 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 
 public interface AccountNotificationRepository extends JpaRepository<AccountNotification, Long> {
+  void deleteAllByUserId(Long userId);
+
   Page<AccountNotification> findAllByUserId(Long userId, Pageable pageable);
 
   long countByUserIdAndReadFalse(Long userId);

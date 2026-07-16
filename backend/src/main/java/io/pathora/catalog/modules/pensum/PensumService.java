@@ -19,6 +19,8 @@ public class PensumService {
         .findByCareerIdAndActiveTrue(careerId)
         .map(PensumDto.Response::from)
         .orElseThrow(
-            () -> new ResourceNotFoundException("Active pensum not found for this career."));
+            () ->
+                new ResourceNotFoundException(
+                    "No se encontró un pensum activo para esta carrera."));
   }
 }

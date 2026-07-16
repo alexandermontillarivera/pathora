@@ -14,6 +14,6 @@ public class CommunityController {
 
   @GetMapping("/stats")
   ApiResponse<CommunityDto.Stats> stats() {
-    return ApiResponse.ok("Community statistics retrieved.", service.stats());
+    return ApiResponse.ok("Estadísticas de la comunidad obtenidas correctamente.", service.stats());
   }
 }

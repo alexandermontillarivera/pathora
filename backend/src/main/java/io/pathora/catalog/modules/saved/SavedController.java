@@ -30,14 +30,15 @@ public class SavedController {
   @GetMapping
   ApiResponse<PageResponse<SavedDto.Response>> list(
       @AuthenticationPrincipal Jwt jwt, @Valid @ModelAttribute PaginationRequest pagination) {
-    return ApiResponse.ok("Saved careers retrieved.", service.list(id(jwt), pagination));
+    return ApiResponse.ok(
+        "Carreras guardadas obtenidas correctamente.", service.list(id(jwt), pagination));
   }
 
   @PostMapping("/{careerId}")
   @ResponseStatus(HttpStatus.CREATED)
   ApiResponse<SavedDto.Response> add(
       @AuthenticationPrincipal Jwt jwt, @PathVariable Long careerId) {
-    return ApiResponse.ok("Career saved.", service.add(id(jwt), careerId));
+    return ApiResponse.ok("Carrera guardada correctamente.", service.add(id(jwt), careerId));
   }
 
   @DeleteMapping("/{careerId}")

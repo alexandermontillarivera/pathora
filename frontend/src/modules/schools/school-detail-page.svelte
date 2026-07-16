@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CareerCard from "@components/cards/career-card.svelte"
 	import PageLoader from "@components/ui/page-loader.svelte"
+	import PageState from "@components/ui/page-state.svelte"
 	import { markdownSummary } from "@lib/utils/markdown"
 	import Icon from "@components/ui/icon.svelte"
 	import { useSchoolDetailPage } from "./use-school-detail.svelte"
@@ -9,7 +10,16 @@
 
 <svelte:head><title>{page.school.name || "Escuela"} — Pathora</title></svelte:head>
 <main>
-	{#if page.resource.loading}<PageLoader />{/if}
+	{#if page.resource.loading}<PageLoader />
+	{:else if page.resource.error}<div class="page-shell">
+		<PageState
+			kind={page.resource.errorStatus === 404 ? "not-found" : "error"}
+			title={page.resource.errorStatus === 404 ? "No encontramos esta escuela." : "No pudimos abrir la escuela."}
+			message={page.resource.errorStatus === 404 ? "Es posible que la escuela ya no esté disponible o que el enlace sea incorrecto." : page.resource.error}
+			onRetry={page.resource.reload}
+		/>
+	</div>
+	{:else}
 	<section class="hero" style={`--accent:${page.school.accent}`}>
 		{#if page.school.image}<img src={page.school.image} alt={page.school.name} />{/if}
 		<div class="veil"></div>
@@ -49,6 +59,7 @@
 				<p>Estamos preparando los programas de esta escuela.</p>
 			</div>{/if}
 	</section>
+	{/if}
 </main>
 
 <style>

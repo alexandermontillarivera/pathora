@@ -3,6 +3,7 @@ package io.pathora.catalog.modules.auth;
 import io.pathora.catalog.entities.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
@@ -14,7 +15,8 @@ public final class AuthDto {
       @NotBlank @Size(max = 80) String lastName,
       @NotBlank @Email @Size(max = 254) String email,
       @NotBlank @Size(min = 8, max = 72) String password,
-      @Size(max = 2000) String description) {
+      @Size(max = 2000) String description,
+      @Pattern(regexp = "^[A-Za-z]{2}$") String country) {
     @Override
     public String toString() {
       return "RegisterRequest[firstName="
@@ -25,6 +27,8 @@ public final class AuthDto {
           + email
           + ", password=[PROTECTED], description="
           + description
+          + ", country="
+          + country
           + "]";
     }
   }
@@ -53,6 +57,7 @@ public final class AuthDto {
       String email,
       String description,
       String country,
+      String avatarSeed,
       Instant createdAt) {
     public static UserResponse from(User user) {
       return new UserResponse(
@@ -62,6 +67,7 @@ public final class AuthDto {
           user.getEmail(),
           user.getDescription(),
           user.getCountry(),
+          user.getAvatarSeed(),
           user.getCreatedAt());
     }
   }

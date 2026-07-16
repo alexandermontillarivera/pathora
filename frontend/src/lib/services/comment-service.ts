@@ -2,16 +2,20 @@ import { apiRequest, queryString } from "@lib/api/http-client"
 import type { ApiComment, PageResponse } from "@lib/api/api-types"
 
 export const commentService = {
+	find: (id: number) =>
+		apiRequest<ApiComment>(`/comments/${id}`, { authenticated: true }),
 	stats: () => apiRequest<{averageRating:number;comments:number;careers:number}>('/community/stats'),
 	recent: (page = 1, max = 10) =>
 		apiRequest<PageResponse<ApiComment>>(
 			`/comments${queryString({ page, max, order: "DESC" })}`,
+			{ authenticated: true },
 		),
 	byUser: (userId: number, page = 1, max = 20) =>
-		apiRequest<PageResponse<ApiComment>>(`/users/${userId}/comments${queryString({ page, max, order: "DESC" })}`),
+		apiRequest<PageResponse<ApiComment>>(`/users/${userId}/comments${queryString({ page, max, order: "DESC" })}`, { authenticated: true }),
 	list: (careerId: number, page = 1, max = 10) =>
 		apiRequest<PageResponse<ApiComment>>(
 			`/careers/${careerId}/comments${queryString({ page, max, order: "DESC" })}`,
+			{ authenticated: true },
 		),
 	create: (careerId: number, content: unknown) =>
 		apiRequest<ApiComment>(`/careers/${careerId}/comments`, {

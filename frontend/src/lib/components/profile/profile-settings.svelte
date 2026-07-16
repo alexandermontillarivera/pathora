@@ -5,27 +5,26 @@
 	import { userService } from "@lib/services/user-service"
 	import TextArea from "@components/form/text-area.svelte"
 	import Icon from "@components/ui/icon.svelte"
+	import LocalAiSettings from "@components/ai/local-ai-settings.svelte"
 	import { onMount } from "svelte"
+	import { countryOptions } from "@lib/utils/countries"
+	import { mergeCurrentUser } from "@stores/auth"
+	import ProfileImagePicker from "@components/profile/profile-image-picker.svelte"
+	import ConfirmDialog from "@components/ui/confirm-dialog.svelte"
+	import { clearSession } from "@stores/auth"
+	import { clearSavedCareerIds } from "@stores/saved-careers"
+	import { navigate } from "@lib/router"
 
 	let firstName = $state("")
 	let lastName = $state("")
 	let email = $state("")
-	let country = $state("DO")
+	let country = $state("")
 	let description = $state("")
+	let avatarSeed = $state<string | undefined>()
 	let saved = $state(false)
 	let loading = $state(true)
 	let error = $state("")
-
-	const countries = [
-		{ value: "DO", label: "República Dominicana" },
-		{ value: "MX", label: "México" },
-		{ value: "CO", label: "Colombia" },
-		{ value: "ES", label: "España" },
-		{ value: "AR", label: "Argentina" },
-		{ value: "CL", label: "Chile" },
-		{ value: "US", label: "Estados Unidos" },
-		{ value: "OTHER", label: "Otro país" },
-	]
+	let deleteDialog = $state<ConfirmDialog>()
 
 	onMount(async () => {
 		try {
@@ -33,8 +32,9 @@
 			firstName = user.firstName
 			lastName = user.lastName
 			email = user.email ?? ""
-			country = user.country ?? "DO"
+			country = user.country ?? ""
 			description = user.description
+			avatarSeed = user.avatarSeed
 		} catch (cause) {
 			error =
 				cause instanceof Error ? cause.message : "No pudimos cargar tu perfil."
@@ -47,7 +47,14 @@
 		loading = true
 		error = ""
 		try {
-			await userService.update({ firstName, lastName, description, country })
+			const updatedUser = await userService.update({
+				firstName,
+				lastName,
+				description,
+				country: country || undefined,
+				avatarSeed,
+			})
+			mergeCurrentUser(updatedUser)
 			saved = true
 			setTimeout(() => (saved = false), 2200)
 		} catch (cause) {
@@ -59,9 +66,11 @@
 			loading = false
 		}
 	}
-	function logout() {
-		authService.logout()
-		location.href = "/"
+	async function deleteAccount() {
+		await userService.removeCurrent()
+		clearSavedCareerIds()
+		await clearSession()
+		navigate("/")
 	}
 </script>
 
@@ -76,7 +85,12 @@
 					<Icon name="check" size={16} />Cambios guardados
 				</div>{/if}
 		</div>
-		<div class="row">
+		<ProfileImagePicker
+			bind:value={avatarSeed}
+			{firstName}
+			{lastName}
+		/>
+		<div class="row name-fields">
 			<TextInput
 				label="Nombre"
 				bind:value={firstName}
@@ -92,10 +106,12 @@
 			type="email"
 			bind:value={email}
 			autocomplete="email"
+			readonly
+			hint="El correo identifica tu cuenta y no se puede modificar."
 		/><SelectInput
 			label="País"
 			bind:value={country}
-			options={countries}
+			options={countryOptions}
 		/><TextArea
 			label="Sobre ti"
 			bind:value={description}
@@ -127,19 +143,46 @@
 				<input type="checkbox" checked /><i></i></label
 			>
 		</section>
+		<section>
+			<span>Inteligencia local</span>
+			<LocalAiSettings />
+		</section>
 		<section class="danger">
-			<span>Cuenta</span><button onclick={logout}
-				><Icon name="logout" size={17} />Cerrar sesión</button
+			<span>Zona de riesgo</span>
+			<h3>Eliminar tu cuenta.</h3>
+			<p>Esta acción borra permanentemente tu actividad y no se puede deshacer.</p>
+			<button onclick={() => deleteDialog?.open()}
+				><Icon name="trash" size={17} />Eliminar cuenta</button
 			>
 		</section>
 	</aside>
 </div>
+
+<ConfirmDialog
+	bind:this={deleteDialog}
+	title="¿Eliminar tu cuenta definitivamente?"
+	description="Se eliminarán tu perfil, comentarios, respuestas, valoraciones, votos, carreras guardadas, notificaciones y sesiones activas. Esta acción no se puede deshacer."
+	confirmLabel="Sí, eliminar mi cuenta"
+	pendingLabel="Eliminando cuenta…"
+	icon="trash"
+	onConfirm={deleteAccount}
+/>
 
 <style>
 	.settings-layout {
 		display: grid;
 		grid-template-columns: 1.25fr 0.75fr;
 		gap: 1.2rem;
+		align-items: start;
+	}
+
+  .name-fields {
+    margin-bottom: 1rem;
+  }
+
+	form {
+		height: fit-content;
+		align-self: start;
 	}
 	form,
 	aside section {
@@ -150,7 +193,9 @@
 	}
 	.form-head {
 		display: flex;
+		align-items: flex-start;
 		justify-content: space-between;
+		gap: 1rem;
 		margin-bottom: 2rem;
 	}
 	.form-head span,
@@ -166,10 +211,19 @@
 		margin: 0.8rem 0;
 	}
 	.saved {
-		padding: 0.55rem;
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		gap: 0.35rem;
+		flex: 0 0 auto;
+		padding: 0.5rem 0.7rem;
 		border-radius: 99px;
 		background: #e3f8e8;
 		color: #247640;
+		font-size: 0.78rem;
+		font-weight: 600;
+		line-height: 1;
+		white-space: nowrap;
 	}
 	.row {
 		display: grid;
@@ -251,9 +305,17 @@
 		width: 100%;
 		display: flex;
 		gap: 0.5rem;
-		background: white;
-		color: var(--ink);
-		border: 1px solid var(--line);
+		justify-content: center;
+		background: #8d2c24;
+		color: white;
+		border: 1px solid #8d2c24;
+		cursor: pointer;
+	}
+	.danger p {
+		margin: -0.35rem 0 1rem;
+		color: var(--muted);
+		font-size: 0.78rem;
+		line-height: 1.55;
 	}
 	@media (max-width: 900px) {
 		.settings-layout {

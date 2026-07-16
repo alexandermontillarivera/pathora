@@ -1,11 +1,13 @@
 <script lang="ts">
- import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte";import CommentThread from "@components/comments/comment-thread.svelte";import PageLoader from "@components/ui/page-loader.svelte";import Icon from "@components/ui/icon.svelte";import{navigate}from"@lib/router";import{currentUser}from"@stores/auth";import{useCommunity}from"./use-community.svelte";const page=useCommunity();let{resource,stats,pageLoading}=$derived(page);const{text}=page
+ import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte";import CommentThread from "@components/comments/comment-thread.svelte";import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import Icon from "@components/ui/icon.svelte";import{navigate}from"@lib/router";import{currentUser}from"@stores/auth";import{useCommunity}from"./use-community.svelte";const page=useCommunity();let{resource,stats,pageLoading}=$derived(page)
 </script>
 
 <svelte:head><title>Comunidad — Pathora</title></svelte:head>
 
 <main class="page-shell page">
-	{#if pageLoading}<PageLoader />{/if}
+	{#if pageLoading}<PageLoader />
+	{:else if resource.error && !resource.records.length}<PageState title="No pudimos abrir la comunidad." message={resource.error} onRetry={resource.reload} />
+	{:else}
 	<header>
 		<span>Comunidad Pathora</span>
 		<h1>Decisiones más humanas.</h1>
@@ -43,22 +45,22 @@
 					userId: item.author.id,
 					name: `${item.author.firstName} ${item.author.lastName}`,
 					initials: `${item.author.firstName[0] ?? ""}${item.author.lastName[0] ?? ""}`,
+					avatarSeed: item.author.avatarSeed,
 					time: new Intl.DateTimeFormat("es", { dateStyle: "medium" }).format(
 						new Date(item.createdAt),
 					),
-					text: text(item.content),
+					content: item.content,
 					rating: 5,
 				}}
 				career={item.career.name}
+				careerId={item.career.id}
 				useful={item.useful}
+				notUseful={item.notUseful}
+				currentVote={item.currentVote}
 				repliesData={item.replies}
 			/>
 		{/each}
-		{#if resource.error}<div class="load-error" role="alert">
-				{resource.error}<button onclick={() => resource.loadMore()}
-					>Reintentar</button
-				>
-			</div>{/if}
+		{#if resource.error}<PageState compact title="No pudimos cargar más conversaciones." message={resource.error} onRetry={resource.loadMore} />{/if}
 		<InfiniteSentinel
 			disabled={!resource.hasNext || resource.loading}
 			loading={resource.loading && !pageLoading}
@@ -66,6 +68,7 @@
 			onVisible={resource.loadMore}
 		/>
 	</section>
+	{/if}
 </main>
 
 <style>
@@ -158,19 +161,6 @@
 		color: var(--muted);
 	}
 
-	.load-error {
-		padding: 2rem;
-		text-align: center;
-		color: var(--muted);
-	}
-	.load-error button {
-		margin-left: 0.6rem;
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		background: white;
-		padding: 0.5rem;
-		font: inherit;
-	}
 	@media (max-width: 650px) {
 		.pulse {
 			grid-template-columns: 1fr;

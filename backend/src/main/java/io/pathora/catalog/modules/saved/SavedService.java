@@ -38,11 +38,13 @@ public class SavedService {
     var existing = saved.findByUserIdAndCareerId(userId, careerId);
     if (existing.isPresent()) return response(existing.get());
     var user =
-        users.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+        users
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario."));
     var career =
         careers
             .findById(careerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Career not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró la carrera."));
     return response(saved.save(new SavedCareer(user, career)));
   }
 

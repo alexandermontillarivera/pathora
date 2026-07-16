@@ -21,24 +21,26 @@ public class NotificationController {
   @GetMapping
   ApiResponse<PageResponse<NotificationDto.Response>> list(
       @AuthenticationPrincipal Jwt jwt, @Valid @ModelAttribute PaginationRequest pagination) {
-    return ApiResponse.ok("Notifications retrieved.", service.list(id(jwt), pagination));
+    return ApiResponse.ok(
+        "Notificaciones obtenidas correctamente.", service.list(id(jwt), pagination));
   }
 
   @GetMapping("/summary")
   ApiResponse<NotificationDto.Summary> summary(@AuthenticationPrincipal Jwt jwt) {
-    return ApiResponse.ok("Notification summary retrieved.", service.summary(id(jwt)));
+    return ApiResponse.ok(
+        "Resumen de notificaciones obtenido correctamente.", service.summary(id(jwt)));
   }
 
   @PutMapping("/{notificationId}/read")
   ApiResponse<Void> read(@AuthenticationPrincipal Jwt jwt, @PathVariable Long notificationId) {
     service.read(id(jwt), notificationId);
-    return ApiResponse.ok("Notification read.", null);
+    return ApiResponse.ok("Notificación marcada como leída.", null);
   }
 
   @PutMapping("/read-all")
   ApiResponse<Void> readAll(@AuthenticationPrincipal Jwt jwt) {
     service.readAll(id(jwt));
-    return ApiResponse.ok("Notifications read.", null);
+    return ApiResponse.ok("Todas las notificaciones fueron marcadas como leídas.", null);
   }
 
   private Long id(Jwt jwt) {

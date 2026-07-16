@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public class PaginationRequest {
-  @Min(value = 1, message = "Page must be at least 1") private int page = 1;
+  @Min(value = 1, message = "La página debe ser al menos 1") private int page = 1;
 
-  @Min(value = 1, message = "Max must be at least 1") @Max(value = 100, message = "Max cannot exceed 100") private int max = 20;
+  @Min(value = 1, message = "El máximo por página debe ser al menos 1") @Max(value = 100, message = "El máximo por página no puede superar 100") private int max = 20;
 
   private Sort.Direction order = Sort.Direction.ASC;
 

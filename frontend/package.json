@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@dvcol/svelte-simple-router": "2.7.2",
-    "@tabler/icons-svelte": "3.44.0"
+    "@mlc-ai/web-llm": "0.2.84",
+    "@tabler/icons-svelte": "3.44.0",
+    "i18n-iso-countries": "7.14.0"
   }
 }

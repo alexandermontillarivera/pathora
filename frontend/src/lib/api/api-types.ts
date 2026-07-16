@@ -15,6 +15,7 @@ export type ApiUser = {
 	email?: string
 	description: string
 	country?: string
+	avatarSeed?: string
 	createdAt: string
 	comments?: number
 	ratings?: number
@@ -78,10 +79,11 @@ export type ApiComment = {
 	id: number
 	parentId: number | null
 	content: unknown
-	author: { id: number; firstName: string; lastName: string }
+	author: { id: number; firstName: string; lastName: string; avatarSeed?: string }
 	career: { id: number; name: string }
 	useful: number
 	notUseful: number
+	currentVote: boolean | null
 	replies: ApiComment[]
 	createdAt: string
 	updatedAt: string
@@ -89,7 +91,7 @@ export type ApiComment = {
 export type ApiRating = {
 	id: number
 	value: number
-	user: { id: number; firstName: string; lastName: string }
+	user: { id: number; firstName: string; lastName: string; avatarSeed?: string }
 	career: { id: number; name: string }
 	createdAt: string
 	updatedAt: string

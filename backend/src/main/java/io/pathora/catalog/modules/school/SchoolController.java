@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1/schools")
-@Tag(name = "Schools", description = "School and faculty catalog")
+@Tag(name = "Escuelas", description = "Catálogo de escuelas y facultades")
 public class SchoolController {
   private final SchoolService service;
 
@@ -23,16 +23,16 @@ public class SchoolController {
   }
 
   @GetMapping
-  @Operation(summary = "List schools")
+  @Operation(summary = "Listar escuelas")
   @SuppressWarnings("unused")
   ApiResponse<PageResponse<SchoolDto.Response>> findAll(
       @Valid @ModelAttribute PaginationRequest pagination) {
-    return ApiResponse.ok("Schools retrieved.", service.findAll(pagination));
+    return ApiResponse.ok("Escuelas obtenidas correctamente.", service.findAll(pagination));
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get school details")
+  @Operation(summary = "Obtener el detalle de una escuela")
   ApiResponse<SchoolDto.Response> findOne(@PathVariable Long id) {
-    return ApiResponse.ok("School retrieved.", service.findById(id));
+    return ApiResponse.ok("Escuela obtenida correctamente.", service.findById(id));
   }
 }

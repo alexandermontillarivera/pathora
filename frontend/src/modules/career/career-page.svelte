@@ -1,14 +1,13 @@
 <script lang="ts">
- import CommentThread from "@components/comments/comment-thread.svelte";import RichTextEditor from "@components/form/rich-text-editor.svelte";import RichContent from "@components/ui/rich-content.svelte";import PageLoader from "@components/ui/page-loader.svelte";import{markdownSummary}from"@lib/utils/markdown";import{currentUser}from"@stores/auth";import Icon from "@components/ui/icon.svelte";import{useCareer,type CareerTab}from"./use-career.svelte";const page=useCareer();let{career,apiPensum,rating,loading,loadError,pensum,activeTerm,tab,saved,composing,myRating,careerComments,allSubjects}=$derived(page);const{prerequisiteName,addComment,toggleSaved,rate}=page
+ import CommentThread from "@components/comments/comment-thread.svelte";import RichTextEditor from "@components/form/rich-text-editor.svelte";import RichContent from "@components/ui/rich-content.svelte";import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import ConfirmDialog from "@components/ui/confirm-dialog.svelte";import{markdownSummary}from"@lib/utils/markdown";import{currentUser}from"@stores/auth";import Icon from "@components/ui/icon.svelte";import{useCareer,type CareerTab}from"./use-career.svelte";const page=useCareer();let{career,apiPensum,rating,loading,loadError,loadErrorStatus,pensum,activeTerm,tab,saved,composing,myRating,ratingPending,ratingError,careerComments,allSubjects}=$derived(page);const{prerequisiteName,addComment,toggleSaved,rate,targetCommentId}=page;let savedDialog=$state<ConfirmDialog>();function handleSavedClick(){saved?savedDialog?.open():toggleSaved()}$effect(()=>{if(!loading&&tab==="community"&&targetCommentId){requestAnimationFrame(()=>document.getElementById(`comment-${targetCommentId}`)?.scrollIntoView({behavior:"smooth",block:"center"}))}})
 </script>
 
 <svelte:head><title>{career.name || "Carrera"} — Pathora</title></svelte:head>
 
 <main>
-	{#if loading}<PageLoader />{/if}
-	{#if loadError}<div class="page-shell load-error" role="alert">
-			{loadError}
-		</div>{/if}
+	{#if loading}<PageLoader />
+	{:else if loadError}<div class="page-shell"><PageState kind={loadErrorStatus === 404 ? "not-found" : "error"} title={loadErrorStatus === 404 ? "No encontramos esta carrera." : "No pudimos abrir la carrera."} message={loadError} /></div>
+	{:else}
 	<section class="detail-hero">
 		{#if career.image}<img src={career.image} alt="" />{/if}
 		<div class="shade"></div>
@@ -20,7 +19,7 @@
 			<div class="hero-actions">
 				<button class="primary" onclick={() => (page.tab = "pensum")}
 					>Ver pensum <Icon name="arrow" size={17} /></button
-				>{#if $currentUser}<button class:saved onclick={toggleSaved}
+				>{#if $currentUser}<button class:saved onclick={handleSavedClick}
 						><Icon name={saved ? "bookmark" : "heart"} size={18} />{saved
 							? "Guardada"
 							: "Guardar"}</button
@@ -139,14 +138,27 @@
 					><small>{rating?.count ?? career.reviews} valoraciones</small>
 				</div>
 			</header>
-			{#if $currentUser}<div class="rate-career">
-					<span>Valora esta carrera</span
+			{#if $currentUser}<div class="rate-feedback">
+				<div class="rate-career" aria-busy={ratingPending !== null}>
+					<span class="rate-label">Valora esta carrera</span
 					>{#each [1, 2, 3, 4, 5] as value}<button
 							class:active={myRating >= value}
+							class:pending={ratingPending === value}
+							disabled={ratingPending !== null}
 							onclick={() => rate(value)}
-							aria-label={`${value} estrellas`}>★</button
+							aria-label={`${value} estrellas`}
+							>{#if ratingPending === value}<span
+									class="rating-spinner"
+									aria-hidden="true"></span
+								>{:else}★{/if}</button
 						>{/each}
 				</div>
+				{#if ratingPending !== null}<p class="rating-status" role="status"
+						>Guardando tu valoración…</p
+					>{:else if ratingError}<p class="rating-error" role="alert"
+						>{ratingError}</p
+					>{/if}
+			</div>
 				<button class="comment-cta" onclick={() => (composing = !composing)}
 					>Comparte tu experiencia <Icon name="arrow" size={17} /></button
 				>{/if}
@@ -159,11 +171,26 @@
 			<div class="comments">
 				{#each careerComments as comment}<CommentThread
 						{comment}
+						useful={comment.useful}
+						notUseful={comment.notUseful}
+						currentVote={comment.currentVote}
+						highlighted={targetCommentId === comment.id}
 						repliesData={comment.repliesData}
 					/>{/each}
 			</div>
 		</section>{/if}
+	{/if}
 </main>
+
+<ConfirmDialog
+	bind:this={savedDialog}
+	title="¿Quitar carrera guardada?"
+	description={`${career.name} dejará de aparecer en tu lista de carreras guardadas.`}
+	confirmLabel="Sí, quitar de guardadas"
+	pendingLabel="Quitando…"
+	icon="bookmark"
+	onConfirm={toggleSaved}
+/>
 
 <style>
 	.detail-hero {
@@ -554,9 +581,9 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
-		margin: 2rem 0 1rem;
+		margin-top: 2rem;
 	}
-	.rate-career span {
+	.rate-career .rate-label {
 		margin-right: 0.6rem;
 		font-size: 0.72rem;
 		color: var(--muted);
@@ -568,10 +595,48 @@
 		color: #ccc;
 		font-size: 1.35rem;
 		cursor: pointer;
+		transition:
+			color 160ms ease-out,
+			transform 160ms ease-out;
 	}
 	.rate-career button.active,
 	.rate-career button:hover {
 		color: #dca400;
+	}
+	.rate-career button:not(:disabled):active {
+		transform: scale(0.9);
+	}
+	.rate-career button:disabled {
+		cursor: wait;
+	}
+	.rate-career button.pending {
+		width: 1.65rem;
+		display: grid;
+		place-items: center;
+	}
+	.rating-spinner {
+		width: 15px;
+		height: 15px;
+		border: 2px solid rgba(220, 164, 0, 0.28);
+		border-top-color: #dca400;
+		border-radius: 50%;
+		animation: rating-spin 650ms linear infinite;
+	}
+	.rating-status,
+	.rating-error {
+		margin: 0.35rem 0 1rem;
+		font-size: 0.72rem;
+	}
+	.rating-status {
+		color: var(--muted);
+	}
+	.rating-error {
+		color: #9d2d24;
+	}
+	@keyframes rating-spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 	.main-editor {
 		max-width: 900px;
@@ -597,6 +662,14 @@
 		}
 		.rating {
 			align-items: start;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.rate-career button {
+			transition: none;
+		}
+		.rating-spinner {
+			animation: none;
 		}
 	}
 	@media (max-width: 600px) {

@@ -1,5 +1,5 @@
 <script lang="ts">
- import CommentThread from "@components/comments/comment-thread.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import Icon from "@components/ui/icon.svelte";import{useUserProfile}from"./use-user-profile.svelte";const page=useUserProfile();let{tab,user,comments,reviewed,loading,error}=$derived(page);const{text}=page
+ import CommentThread from "@components/comments/comment-thread.svelte";import CareerCard from "@components/cards/career-card.svelte";import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import CountryDisplay from "@components/profile/country-display.svelte";import UserAvatar from "@components/profile/user-avatar.svelte";import Icon from "@components/ui/icon.svelte";import{useUserProfile}from"./use-user-profile.svelte";const page=useUserProfile();let{tab,user,comments,reviewed,loading,error}=$derived(page)
 </script>
 
 <svelte:head
@@ -9,17 +9,19 @@
 >
 <main class="page-shell page">
 	<button class="back" onclick={() => history.back()}>← Volver</button
-	>{#if loading}<PageLoader />{:else if error}<div class="empty" role="alert">
-			<h2>No pudimos abrir este perfil.</h2>
-			<p>{error}</p>
-		</div>{:else if user}<section class="profile-head">
+	>{#if loading}<PageLoader />{:else if error}<PageState title="No pudimos abrir este perfil." message={error} />{:else if user}<section class="profile-head">
 			<div class="identity">
-				<div class="avatar">{user.firstName[0]}{user.lastName[0]}</div>
+				<div class="avatar"><UserAvatar
+					seed={user.avatarSeed}
+					initials={`${user.firstName[0]}${user.lastName[0]}`}
+					name={`${user.firstName} ${user.lastName}`}
+					size={112}
+				/></div>
 				<div>
 					<span>Perfil de la comunidad</span>
 					<h1>{user.firstName} {user.lastName}</h1>
 					<p>
-						<Icon name="world" size={15} />{user.country ?? "País no indicado"} ·
+						<Icon name="world" size={15} /><CountryDisplay country={user.country} /> ·
 						Miembro desde {new Date(user.createdAt).getFullYear()}
 					</p>
 				</div>
@@ -55,14 +57,18 @@
 									userId: item.author.id,
 									name: `${item.author.firstName} ${item.author.lastName}`,
 									initials: `${item.author.firstName[0]}${item.author.lastName[0]}`,
+									avatarSeed: item.author.avatarSeed,
 									time: new Intl.DateTimeFormat("es", {
 										dateStyle: "medium",
 									}).format(new Date(item.createdAt)),
-									text: text(item.content),
+									content: item.content,
 									rating: 5,
 								}}
-								career={item.career.name}
+							career={item.career.name}
+							careerId={item.career.id}
 								useful={item.useful}
+								notUseful={item.notUseful}
+								currentVote={item.currentVote}
 							/>{/each}
 					</div>{:else}<div class="empty">
 						<h3>Sin comentarios públicos.</h3>
@@ -109,12 +115,8 @@
 	.avatar {
 		width: 112px;
 		height: 112px;
-		border-radius: 32px;
-		background: var(--accent);
 		display: grid;
 		place-items: center;
-		font-family: var(--display);
-		font-size: 2.3rem;
 	}
 	.identity span,
 	.about > span {
@@ -181,8 +183,7 @@
 		border-color: var(--ink);
 		color: var(--ink);
 	}
-	.content h2,
-	.empty h2 {
+	.content h2 {
 		font-family: var(--display);
 		font-size: clamp(2.7rem, 5vw, 4.5rem);
 		letter-spacing: -0.055em;

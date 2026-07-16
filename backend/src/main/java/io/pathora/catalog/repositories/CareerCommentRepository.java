@@ -7,6 +7,13 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CareerCommentRepository extends JpaRepository<CareerComment, Long> {
+  @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+  @org.springframework.data.jpa.repository.Query(
+      "update CareerComment c set c.parent = null where c.parent.user.id = :userId")
+  void detachRepliesFromCommentsByUserId(Long userId);
+
+  void deleteAllByUserId(Long userId);
+
   @EntityGraph(attributePaths = "user")
   Page<CareerComment> findAllByCareerIdAndParentIsNull(Long careerId, Pageable pageable);
 

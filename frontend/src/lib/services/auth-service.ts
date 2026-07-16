@@ -16,6 +16,7 @@ export const authService = {
 		email: string
 		password: string
 		description?: string
+		country?: string
 	}) {
 		const result = await apiRequest<AuthResponse>("/auth/register", {
 			method: "POST",

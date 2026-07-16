@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class AuthService {
     var normalizedEmail = request.email().trim().toLowerCase();
 
     if (users.existsByEmailIgnoreCase(normalizedEmail))
-      throw new ConflictException("An account with this email already exists.");
+      throw new ConflictException("Ya existe una cuenta con este correo electrónico.");
     var user =
         users.save(
             new User(
@@ -69,7 +70,10 @@ public class AuthService {
                 request.lastName().trim(),
                 normalizedEmail,
                 passwords.encode(request.password()),
-                request.description() == null ? "" : request.description().trim()));
+                request.description() == null ? "" : request.description().trim(),
+                request.country() == null
+                    ? null
+                    : request.country().trim().toUpperCase(Locale.ROOT)));
     email.sendWelcome(user);
     return response(user);
   }
@@ -79,9 +83,10 @@ public class AuthService {
     var user =
         users
             .findByEmailIgnoreCase(request.email().trim())
-            .orElseThrow(() -> new UnauthorizedException("Invalid email or password."));
+            .orElseThrow(
+                () -> new UnauthorizedException("Correo electrónico o contraseña incorrectos."));
     if (!passwords.matches(request.password(), user.getPasswordHash()))
-      throw new UnauthorizedException("Invalid email or password.");
+      throw new UnauthorizedException("Correo electrónico o contraseña incorrectos.");
     notifications.save(
         new io.pathora.catalog.entities.AccountNotification(
             user,
@@ -102,7 +107,10 @@ public class AuthService {
         refreshTokens
             .findByTokenHash(hash(request.refreshToken()))
             .filter(RefreshToken::isValid)
-            .orElseThrow(() -> new UnauthorizedException("Refresh token is invalid or expired."));
+            .orElseThrow(
+                () ->
+                    new UnauthorizedException(
+                        "El token de renovación no es válido o ha expirado."));
     stored.revoke();
     return response(stored.getUser());
   }
@@ -113,7 +121,9 @@ public class AuthService {
   }
 
   public User getUser(Long id) {
-    return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    return users
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario."));
   }
 
   @Transactional
@@ -140,7 +150,9 @@ public class AuthService {
             .findByTokenHash(hash(request.token()))
             .filter(PasswordResetToken::isValid)
             .orElseThrow(
-                () -> new UnauthorizedException("Password reset link is invalid or expired."));
+                () ->
+                    new UnauthorizedException(
+                        "El enlace para restablecer la contraseña no es válido o ha expirado."));
     token.getUser().changePassword(passwords.encode(request.password()));
     token.consume();
     refreshTokens.deleteAllByUserId(token.getUser().getId());

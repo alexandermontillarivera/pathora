@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte"
 	import PageLoader from "@components/ui/page-loader.svelte"
+	import PageState from "@components/ui/page-state.svelte"
 	import { link } from "@dvcol/svelte-simple-router/action"
 	import { markdownSummary } from "@lib/utils/markdown"
 	import { useSchoolsPage } from "./use-schools.svelte"
@@ -10,7 +11,9 @@
 <svelte:head><title>Escuelas — Pathora</title></svelte:head>
 
 <main class="page-shell page">
-	{#if page.pageLoading}<PageLoader />{/if}
+	{#if page.pageLoading}<PageLoader />
+	{:else if page.resource.error && !page.resource.records.length}<PageState title="No pudimos cargar las escuelas." message={page.resource.error} onRetry={page.resource.reload} />
+	{:else}
 	<header>
 		<span class="kicker">15 espacios de aprendizaje</span>
 		<h1>Escuelas con una<br />mirada propia.</h1>
@@ -35,17 +38,14 @@
 				</div>
 			</article>{/each}
 	</div>
-	{#if page.resource.error}<div class="load-error" role="alert">
-			{page.resource.error}<button onclick={() => page.resource.loadMore()}
-				>Reintentar</button
-			>
-		</div>{/if}
+	{#if page.resource.error}<PageState compact title="La siguiente página no pudo cargarse." message={page.resource.error} onRetry={page.resource.loadMore} />{/if}
 	<InfiniteSentinel
 		disabled={!page.resource.hasNext || page.resource.loading}
 		loading={page.resource.loading && !page.pageLoading}
 		label="Cargando más escuelas"
 		onVisible={page.resource.loadMore}
 	/>
+	{/if}
 </main>
 
 <style>
@@ -147,20 +147,6 @@
 		transform: translate(3px, -3px);
 	}
 
-	.load-error {
-		margin: 2rem auto;
-		text-align: center;
-		color: var(--muted);
-	}
-	.load-error button {
-		margin-left: 0.7rem;
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		background: white;
-		padding: 0.5rem 0.7rem;
-		font: inherit;
-		cursor: pointer;
-	}
 	@media (max-width: 800px) {
 		article {
 			grid-template-columns: 40px 1fr;

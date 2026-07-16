@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/pensums")
-@Tag(name = "Pensums", description = "Academic curricula organized by terms and subjects")
+@Tag(name = "Pensums", description = "Planes académicos organizados por períodos y materias")
 public class PensumController {
   private final PensumService service;
 
@@ -16,8 +16,8 @@ public class PensumController {
   }
 
   @GetMapping("/career/{careerId}")
-  @Operation(summary = "Get the active pensum for a career")
+  @Operation(summary = "Obtener el pensum activo de una carrera")
   ApiResponse<PensumDto.Response> findByCareer(@PathVariable Long careerId) {
-    return ApiResponse.ok("Pensum retrieved.", service.findActiveByCareer(careerId));
+    return ApiResponse.ok("Pensum obtenido correctamente.", service.findActiveByCareer(careerId));
   }
 }

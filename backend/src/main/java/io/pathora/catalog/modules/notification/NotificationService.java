@@ -33,7 +33,7 @@ public class NotificationService {
         repository
             .findById(id)
             .filter(value -> value.getUser().getId().equals(userId))
-            .orElseThrow(() -> new ResourceNotFoundException("Notification not found."));
+            .orElseThrow(() -> new ResourceNotFoundException("No se encontró la notificación."));
     item.markRead();
   }
 

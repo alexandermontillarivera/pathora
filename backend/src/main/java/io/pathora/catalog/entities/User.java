@@ -28,6 +28,9 @@ public class User {
   @Column(length = 80)
   private String country;
 
+  @Column(name = "avatar_seed", length = 80)
+  private String avatarSeed;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -37,12 +40,18 @@ public class User {
   protected User() {}
 
   public User(
-      String firstName, String lastName, String email, String passwordHash, String description) {
+      String firstName,
+      String lastName,
+      String email,
+      String passwordHash,
+      String description,
+      String country) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
     this.passwordHash = passwordHash;
     this.description = description;
+    this.country = country;
   }
 
   @PrePersist
@@ -83,11 +92,17 @@ public class User {
     return country;
   }
 
-  public void updateProfile(String firstName, String lastName, String description, String country) {
+  public String getAvatarSeed() {
+    return avatarSeed;
+  }
+
+  public void updateProfile(
+      String firstName, String lastName, String description, String country, String avatarSeed) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.description = description;
     this.country = country;
+    this.avatarSeed = avatarSeed;
   }
 
   public void changePassword(String passwordHash) {

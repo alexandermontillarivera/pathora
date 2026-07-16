@@ -6,6 +6,8 @@
 		placeholder = "",
 		value = $bindable(""),
 		required = false,
+		readonly = false,
+		hint,
 		minlength,
 		autocomplete,
 	}: {
@@ -14,6 +16,8 @@
 		placeholder?: string
 		value?: string
 		required?: boolean
+		readonly?: boolean
+		hint?: string
 		minlength?: number
 		autocomplete?:
 			| "given-name"
@@ -35,6 +39,8 @@
 			type={inputType}
 			{placeholder}
 			{required}
+			{readonly}
+			aria-readonly={readonly}
 			{minlength}
 			{autocomplete}
 		/>
@@ -48,6 +54,7 @@
 			><Icon name={passwordVisible ? "eyeOff" : "eye"} size={19} /></button
 		>{/if}
 	</div>
+	{#if hint}<small>{hint}</small>{/if}
 </label>
 
 <style>
@@ -80,6 +87,21 @@
 	input:focus {
 		border-color: #777;
 		box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+	}
+	input:read-only {
+		background: var(--surface-2);
+		color: var(--muted);
+		cursor: text;
+	}
+	input:read-only:focus {
+		border-color: var(--line);
+		box-shadow: none;
+	}
+	small {
+		color: var(--muted);
+		font-size: 0.7rem;
+		font-weight: 450;
+		line-height: 1.45;
 	}
 	input[type="password"],
 	.field:has(.visibility) input {

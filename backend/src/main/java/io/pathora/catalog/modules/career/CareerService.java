@@ -45,7 +45,7 @@ public class CareerService {
   private Career entity(Long id) {
     return repository
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Career not found."));
+        .orElseThrow(() -> new ResourceNotFoundException("No se encontró la carrera."));
   }
 
   private CareerDto.Response response(Career career) {

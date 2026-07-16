@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface RatingRepository extends JpaRepository<Rating, Long> {
+  void deleteAllByUserId(Long userId);
+
   boolean existsByUserIdAndCareerId(Long userId, Long careerId);
 
   java.util.Optional<Rating> findByUserIdAndCareerId(Long userId, Long careerId);
