@@ -6,5 +6,3 @@
 .vscode
 target
 *.log
-Dockerfile.vercel
-wait-for-spring.sh

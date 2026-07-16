@@ -21,7 +21,7 @@ Copy `.env.example` to `.env` if you need to change the backend URL.
 
 Navigation uses `@dvcol/svelte-simple-router` in History API mode, with clean URLs and a 404 page. Internal imports use aliases such as `@components`, `@modules`, `@lib`, `@data`, and `@stores`.
 
-In production, the server must apply a frontend route fallback to `index.html` so that a direct reload of `/careers/1` works correctly. The included `nginx.vercel.conf` handles this for both Docker and Vercel deployments.
+In production, the server must apply a frontend route fallback to `index.html` so that a direct reload of `/careers/1` works correctly. The included `nginx.conf` provides this behavior for the production Docker image.
 
 ## Scripts
 

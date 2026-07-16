@@ -5,24 +5,17 @@ Full-stack academic career catalog that helps students explore university progra
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                    Vercel                        │
-│  ┌──────────────┐   ┌────────────────────────┐  │
-│  │   Frontend    │   │       Backend          │  │
-│  │  Svelte 5 SPA │   │   Spring Boot 4.1      │  │
-│  │  Nginx (port) │   │   Java 21 (port 80)    │  │
-│  └──────┬───────┘   └───────────┬────────────┘  │
-│         │ /api/*                │                │
-│         └───────────────────────┘                │
-└─────────────────────────────────────────────────┘
-                     │
-              ┌──────┴──────┐
-              │  PostgreSQL  │
-              │   (Neon)     │
-              └─────────────┘
+┌────────────────────┐        HTTPS        ┌────────────────────────┐
+│      Frontend      │ ──────────────────▶ │     Render backend     │
+│   Svelte 5 + Vite  │                     │ Spring Boot 4.1 / Java │
+└────────────────────┘                     └───────────┬────────────┘
+                                                      │ JDBC/TLS
+                                           ┌──────────▼────────────┐
+                                           │ Managed PostgreSQL    │
+                                           └───────────────────────┘
 ```
 
-Requests to `/api/*` are routed to the backend service; everything else hits the SPA served by Nginx.
+The frontend calls the public Render API. The backend exposes all application endpoints below `/api` and connects to managed PostgreSQL over TLS.
 
 ## Tech Stack
 
@@ -52,9 +45,10 @@ Requests to `/api/*` are routed to the backend service; everything else hits the
 
 ```
 proyecto-final/
-├── vercel.json                    # Vercel multi-service config
+├── render.yaml                    # Render backend Blueprint
 ├── backend/
-│   ├── Dockerfile.vercel          # Multi-stage Docker build
+│   ├── Dockerfile                 # Render production image
+│   ├── nginx.render.conf          # Root redirect and backend proxy
 │   ├── pom.xml                    # Maven config
 │   ├── mvnw / mvnw.cmd            # Maven wrapper
 │   ├── .env.example               # Environment variables template
@@ -77,8 +71,8 @@ proyecto-final/
 │       ├── repositories/          # Spring Data repositories
 │       └── shared/                # API envelope, exceptions, JWT, email, pagination
 └── frontend/
-    ├── Dockerfile.vercel          # Multi-stage Docker build (Node → Nginx)
-    ├── nginx.vercel.conf          # SPA-friendly Nginx config
+    ├── Dockerfile                 # Generic production image
+    ├── nginx.conf                 # SPA route fallback and asset caching
     ├── package.json
     └── src/
         ├── main.ts                # Svelte 5 mount entry
@@ -151,8 +145,8 @@ The SPA starts at `http://localhost:5173`.
 | `DB_URL` | Yes | — | PostgreSQL JDBC connection string |
 | `DB_USERNAME` | Yes | — | Database user |
 | `DB_PASSWORD` | Yes | — | Database password |
-| `SERVER_PORT` | No | `4000` | Server port (overridden by `PORT` in Vercel) |
-| `PORT` | No | — | Injected by Vercel at runtime |
+| `SERVER_PORT` | No | `4000` | Local server port |
+| `PORT` | No | — | Injected by the production hosting platform |
 | `JWT_SECRET` | Yes | — | Base64-encoded 32-byte HS256 key |
 | `JWT_EXPIRATION_MINUTES` | No | `15` | Access token lifetime |
 | `JWT_REFRESH_EXPIRATION_DAYS` | No | `30` | Refresh token lifetime |
@@ -167,7 +161,7 @@ The SPA starts at `http://localhost:5173`.
 |---|---|---|---|
 | `VITE_API_URL` | No | `http://localhost:4000/v1` | Backend API base URL |
 
-In production (Docker/Vercel), `VITE_API_URL` defaults to `/api/v1` — a relative path that hits the same domain.
+In production, set `VITE_API_URL` to the full Render API URL, such as `https://pathora-60cw.onrender.com/api/v1`.
 
 ## API Overview
 
@@ -226,53 +220,21 @@ List endpoints accept query parameters:
 
 The `/api/v1/careers` endpoint additionally accepts `name`, `schoolId`, `studyMode`, and `status` filters.
 
-## Deploying to Vercel
+## Deploying the backend to Render
 
-The project uses Vercel's multi-service Docker deployments. Each service has its own `Dockerfile.vercel`:
+The root `render.yaml` defines the backend as a Docker web service in Virginia. Create a Blueprint from the repository and provide the database, JWT, and Resend secrets requested by Render. The service uses `/api/actuator/health` as its health check and redirects its root URL to Swagger UI.
 
-- **`frontend/Dockerfile.vercel`** — Builds the Svelte SPA with Vite, serves via Nginx on port 80. Accepts `VITE_API_URL` as a build argument (defaults to `/api/v1`).
-- **`backend/Dockerfile.vercel`** — Multi-stage build: compiles with Maven + JDK 21, runs with JRE 21 Alpine on port 80. Reads configuration from environment variables.
-
-Routing is defined in `vercel.json` at the project root:
-
-```json
-{
-  "services": {
-    "frontend": { "root": "frontend/", "entrypoint": "Dockerfile.vercel" },
-    "backend":  { "root": "backend/",  "entrypoint": "Dockerfile.vercel" }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "backend" } },
-    { "source": "/(.*)",     "destination": { "service": "frontend" } }
-  ]
-}
-```
-
-### Steps
-
-1. Install the [Vercel CLI](https://vercel.com/docs/cli):
-
-   ```powershell
-   npm i -g vercel
-   ```
-
-2. Deploy:
-
-   ```powershell
-   vercel deploy
-   ```
-
-3. Set the required environment variables in the [Vercel dashboard](https://vercel.com/dashboard) (see table above). Variables are automatically injected into both services at build and runtime.
+The production environment can be imported from `backend/.env.render`. Keep this file private and never commit it.
 
 ### Local testing with Docker
 
 ```powershell
 # Backend
-docker build -f backend/Dockerfile.vercel -t pathora-backend backend/
-docker run -p 4000:80 --env-file backend/.env pathora-backend
+docker build -t pathora-backend backend/
+docker run -p 4000:10000 --env-file backend/.env.render -e PORT=10000 pathora-backend
 
-# Frontend
-docker build -f frontend/Dockerfile.vercel -t pathora-frontend frontend/
+# Frontend (replace the API URL with the active backend)
+docker build --build-arg VITE_API_URL=https://pathora-60cw.onrender.com/api/v1 -t pathora-frontend frontend/
 docker run -p 3000:80 pathora-frontend
 ```
 
