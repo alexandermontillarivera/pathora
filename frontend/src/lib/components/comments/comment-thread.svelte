@@ -4,7 +4,7 @@
 	import ConfirmDialog from "@components/ui/confirm-dialog.svelte"
 	import Icon from "@components/ui/icon.svelte"
 	import { navigate } from "@lib/router"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import { commentService } from "@lib/services/comment-service"
 	import type { ApiComment } from '@lib/api/api-types'
 	import { currentUser } from '@stores/auth'

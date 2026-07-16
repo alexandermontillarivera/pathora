@@ -1,7 +1,7 @@
 <script lang="ts">
 	import NotificationCenter from "@components/notifications/notification-center.svelte"
 	import AccountMenu from "@components/auth/account-menu.svelte"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import LogoMark from "@components/brand/logo-mark.svelte"
 	import { currentUser } from "@stores/auth"
 	import Icon from "@components/ui/icon.svelte"

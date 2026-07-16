@@ -2,7 +2,7 @@
 	import InfiniteSentinel from "@components/ui/infinite-sentinel.svelte"
 	import PageLoader from "@components/ui/page-loader.svelte"
 	import PageState from "@components/ui/page-state.svelte"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import { markdownSummary } from "@lib/utils/markdown"
 	import { useSchoolsPage } from "./use-schools.svelte"
 	const page=useSchoolsPage()

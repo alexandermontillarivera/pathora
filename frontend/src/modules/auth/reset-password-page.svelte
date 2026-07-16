@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useResetPasswordPage } from "./use-reset-password.svelte"
 	import TextInput from "@components/form/text-input.svelte"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import Icon from "@components/ui/icon.svelte"
 	const page = useResetPasswordPage()
 </script>

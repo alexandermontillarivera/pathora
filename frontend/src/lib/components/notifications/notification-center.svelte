@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { notificationService } from "@lib/services/notification-service"
 	import type { ApiNotification } from "@lib/api/api-types"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import Icon from "@components/ui/icon.svelte"
 	let root: HTMLDivElement
 	let open = $state(false)

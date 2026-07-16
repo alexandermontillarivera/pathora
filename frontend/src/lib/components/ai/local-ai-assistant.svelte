@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AssistantMessage from "@components/ai/assistant-message.svelte"
 	import Icon from "@components/ui/icon.svelte"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import { careersMentionedIn } from "@lib/ai/catalog-context"
 	import {
 		ensureLocalAiEngine,

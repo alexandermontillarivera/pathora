@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@components/ui/icon.svelte"
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import { navigate } from "@lib/router"
 	import { clearSession, currentUser } from "@stores/auth"
 	import UserAvatar from "@components/profile/user-avatar.svelte"

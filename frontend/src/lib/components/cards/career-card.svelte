@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { link } from "@dvcol/svelte-simple-router/action"
+	import { link } from "@lib/actions/link"
 	import Icon from "@components/ui/icon.svelte"
 	import ConfirmDialog from "@components/ui/confirm-dialog.svelte"
 	import type { Career } from "@lib/types"

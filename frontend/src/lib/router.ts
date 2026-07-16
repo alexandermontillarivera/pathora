@@ -59,9 +59,9 @@ export const router = new Router<RouteName>({
 	routes,
 	hash: false,
 	listen: "history",
-	// Query parameters belong to the destination route. Never merge them with
-	// parameters left behind by the route the user is leaving.
-	stripQuery: true,
+	// Preserve parameters from direct-entry URLs. Internal navigation cleans
+	// parameters from the route being left.
+	stripQuery: false,
 })
 
 function locationFromHref(href: string) {

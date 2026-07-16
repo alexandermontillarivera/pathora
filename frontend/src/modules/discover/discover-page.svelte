@@ -1,5 +1,5 @@
 <script lang="ts">
- import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import CareerCard from "@components/cards/career-card.svelte";import{link}from"@dvcol/svelte-simple-router/action";import Icon from "@components/ui/icon.svelte";import{useDiscover}from"./use-discover.svelte";const page=useDiscover();let{careers,schools,loading,loadError,totalCareers,featured,filtered}=$derived(page);const{form,modes,search}=page
+ import PageLoader from "@components/ui/page-loader.svelte";import PageState from "@components/ui/page-state.svelte";import CareerCard from "@components/cards/career-card.svelte";import{link}from"@lib/actions/link";import Icon from "@components/ui/icon.svelte";import{useDiscover}from"./use-discover.svelte";const page=useDiscover();let{careers,schools,loading,loadError,totalCareers,featured,filtered}=$derived(page);const{form,modes,search}=page
 </script>
 
 <svelte:head><title>Pathora — Encuentra tu camino</title></svelte:head>
