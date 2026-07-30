@@ -193,6 +193,12 @@
 		position: sticky;
 		top: 100px;
 		align-self: start;
+		max-height: calc(100dvh - 116px);
+		padding-right: 0.65rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-gutter: stable;
+		scrollbar-width: thin;
 	}
 	.aside-head {
 		display: flex;
@@ -301,7 +307,9 @@
 		aside {
 			display: none;
 			position: static;
+			max-height: none;
 			padding: 1.2rem;
+			overflow: visible;
 			border: 1px solid var(--line);
 			border-radius: 18px;
 			background: var(--surface);
@@ -321,6 +329,40 @@
 		}
 		.grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (max-height: 760px) and (min-width: 851px) {
+		.page {
+			padding-top: 2.5rem;
+			padding-bottom: 7rem;
+		}
+		h1 {
+			font-size: clamp(3rem, 6vw, 5.25rem);
+			margin: 0.7rem 0 1.25rem;
+		}
+		form {
+			height: 56px;
+		}
+		.toolbar {
+			margin-top: 2.5rem;
+		}
+		aside {
+			top: 84px;
+			max-height: calc(100dvh - 100px);
+		}
+		.aside-head {
+			margin-bottom: 1.4rem;
+		}
+		fieldset {
+			padding-bottom: 1.1rem;
+			margin-bottom: 1.1rem;
+		}
+		fieldset label {
+			margin: 0.58rem 0;
+		}
+		.empty {
+			min-height: 320px;
+			padding-block: 3rem;
 		}
 	}
 	@media (max-width: 600px) {
